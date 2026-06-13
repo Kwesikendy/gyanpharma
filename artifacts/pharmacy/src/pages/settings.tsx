@@ -76,12 +76,12 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>System Information</CardTitle>
-            <CardDescription>GyanChem Pharmacy Manager</CardDescription>
+            <CardDescription>Gyan Chemicals Pharmacy Manager</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">System</span>
-              <span className="font-medium">GyanChem Pharmacy Manager</span>
+              <span className="font-medium">Gyan Chemicals Pharmacy Manager</span>
             </div>
             <Separator />
             <div className="flex justify-between text-sm">

@@ -57,7 +57,7 @@ export default function Login() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg mb-4">
             <Pill className="h-8 w-8" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">GyanChem</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gyan Chemicals</h1>
           <p className="text-slate-500 mt-2">Pharmacy Management System</p>
         </div>
 

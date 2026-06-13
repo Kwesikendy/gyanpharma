@@ -53,7 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex h-16 shrink-0 items-center justify-between px-6 bg-sidebar-primary/10 border-b border-sidebar-border">
           <div className="flex items-center gap-2 font-bold text-lg text-white">
             <Pill className="h-6 w-6 text-sidebar-primary" />
-            <span>GyanChem</span>
+            <span>Gyan Chemicals</span>
           </div>
           <Button
             variant="ghost"
@@ -123,7 +123,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="font-semibold">GyanChem</div>
+          <div className="font-semibold">Gyan Chemicals</div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-background">

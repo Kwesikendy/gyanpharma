@@ -8,6 +8,7 @@ import { AdminRoute } from "@/components/auth/AdminRoute";
 import { Layout } from "@/components/layout/Layout";
 
 import Login from "@/pages/login";
+import Setup from "@/pages/setup";
 import Dashboard from "@/pages/dashboard";
 import Inventory from "@/pages/inventory";
 import StockEntry from "@/pages/stock-entry";
@@ -24,6 +25,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/setup" component={Setup} />
 
       <Route path="/dashboard">
         <ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>
