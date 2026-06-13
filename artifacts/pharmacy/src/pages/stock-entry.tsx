@@ -13,8 +13,31 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, PackagePlus, History } from "lucide-react";
+import { Loader2, PackagePlus, History, ArrowDownToLine, Box } from "lucide-react";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 24 },
+  },
+};
+
+const rowVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0 },
+};
 
 const stockEntrySchema = z.object({
   medicineId: z.string().min(1, "Select a medicine"),
@@ -91,17 +114,37 @@ export default function StockEntry() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <PackagePlus className="h-7 w-7 text-primary" />
-        <h1 className="text-3xl font-bold tracking-tight">Stock Entry</h1>
-      </div>
+    <motion.div 
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants} className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 shadow-sm">
+          <PackagePlus className="h-6 w-6 text-emerald-600" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Stock Entry</h1>
+          <p className="text-sm text-muted-foreground">Log new medicine deliveries into inventory</p>
+        </div>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Log Incoming Stock</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <motion.div variants={itemVariants}>
+        <Card className="overflow-hidden border-0 shadow-lg shadow-emerald-900/5">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-white relative overflow-hidden">
+            <div className="absolute -right-6 -top-10 opacity-20">
+              <Box className="h-40 w-40" />
+            </div>
+            <CardTitle className="text-2xl font-bold flex items-center gap-2 relative z-10">
+              <ArrowDownToLine className="h-6 w-6" />
+              Incoming Delivery
+            </CardTitle>
+            <p className="text-emerald-50 mt-1 relative z-10 text-sm">
+              Scan or enter details for the newly received stock.
+            </p>
+          </div>
+          <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <div className="grid gap-5 md:grid-cols-2">
@@ -199,23 +242,30 @@ export default function StockEntry() {
                 )}
               />
 
-              <Button type="submit" disabled={submitting} className="w-full sm:w-auto" data-testid="button-submit-stock">
-                {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PackagePlus className="mr-2 h-4 w-4" />}
-                Log Stock Entry
-              </Button>
+              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+                <Button 
+                  type="submit" 
+                  disabled={submitting} 
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 h-11 px-8 rounded-full" 
+                  data-testid="button-submit-stock"
+                >
+                  {submitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <PackagePlus className="mr-2 h-5 w-5" />}
+                  Log Stock Entry
+                </Button>
+              </motion.div>
             </form>
           </Form>
         </CardContent>
-      </Card>
+        </Card>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            Recent Stock Entries
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <motion.div variants={itemVariants}>
+        <Card className="overflow-hidden border shadow-sm">
+          <div className="flex items-center gap-2 border-b bg-muted/40 px-6 py-4">
+            <History className="h-5 w-5 text-emerald-600" />
+            <CardTitle className="text-lg">Recent Deliveries</CardTitle>
+          </div>
+          <CardContent className="p-0">
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -243,21 +293,30 @@ export default function StockEntry() {
                   </TableRow>
                 ) : (
                   entries.map((entry) => (
-                    <TableRow key={entry.id}>
+                    <motion.tr 
+                      key={entry.id}
+                      variants={rowVariants}
+                      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    >
                       <TableCell className="font-medium">{entry.medicineName}</TableCell>
-                      <TableCell className="font-semibold text-green-600">+{entry.quantityReceived}</TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                          +{entry.quantityReceived}
+                        </span>
+                      </TableCell>
                       <TableCell className="text-muted-foreground font-mono text-xs">{entry.batchNumber}</TableCell>
                       <TableCell>{entry.expiryDate ? format(new Date(entry.expiryDate), "MMM d, yyyy") : "-"}</TableCell>
                       <TableCell>{entry.dateReceived ? format(new Date(entry.dateReceived), "MMM d, yyyy") : "-"}</TableCell>
-                      <TableCell className="text-muted-foreground">{entry.createdBy}</TableCell>
-                    </TableRow>
+                      <TableCell className="text-muted-foreground text-xs">{entry.createdBy}</TableCell>
+                    </motion.tr>
                   ))
                 )}
               </TableBody>
             </Table>
           </div>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 }

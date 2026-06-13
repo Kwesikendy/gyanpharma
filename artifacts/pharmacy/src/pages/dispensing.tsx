@@ -16,8 +16,31 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Pill, Download, AlertTriangle, AlertCircle, History } from "lucide-react";
+import { Loader2, Pill, Download, AlertTriangle, AlertCircle, History, Receipt, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 24 },
+  },
+};
+
+const rowVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0 },
+};
 
 const dispensingSchema = z.object({
   medicineId: z.string().min(1, "Select a medicine"),
@@ -114,22 +137,44 @@ export default function Dispensing() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <motion.div 
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Pill className="h-7 w-7 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">Dispensing</h1>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 shadow-sm">
+            <Pill className="h-6 w-6 text-indigo-600" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dispensing</h1>
+            <p className="text-sm text-muted-foreground">Record sales and patient medication pickups</p>
+          </div>
         </div>
-        <Button variant="outline" onClick={() => exportDispensingToCsv(records)} disabled={records.length === 0}>
-          <Download className="mr-2 h-4 w-4" /> Export CSV
-        </Button>
-      </div>
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button variant="outline" onClick={() => exportDispensingToCsv(records)} disabled={records.length === 0} className="shadow-sm">
+            <Download className="mr-2 h-4 w-4" /> Export CSV
+          </Button>
+        </motion.div>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Record Dispensing</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <motion.div variants={itemVariants}>
+        <Card className="overflow-hidden border-0 shadow-lg shadow-indigo-900/5">
+          <div className="bg-gradient-to-r from-indigo-500 to-blue-600 p-6 text-white relative overflow-hidden">
+            <div className="absolute -right-4 -top-8 opacity-20">
+              <Receipt className="h-40 w-40" />
+            </div>
+            <CardTitle className="text-2xl font-bold flex items-center gap-2 relative z-10">
+              <ArrowRight className="h-6 w-6" />
+              Record Dispensing
+            </CardTitle>
+            <p className="text-indigo-50 mt-1 relative z-10 text-sm">
+              Process a new order or prescription securely.
+            </p>
+          </div>
+          <CardContent className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <div className="grid gap-5 md:grid-cols-2">
@@ -243,51 +288,61 @@ export default function Dispensing() {
                     </div>
                   </div>
 
+                  <AnimatePresence>
                   {isExpired(selectedMedicine.expiryDate) && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>This medicine has expired. Dispensing is not allowed.</AlertDescription>
-                    </Alert>
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                      <Alert variant="destructive" className="shadow-sm">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>This medicine has expired. Dispensing is not allowed.</AlertDescription>
+                      </Alert>
+                    </motion.div>
                   )}
 
                   {!isExpired(selectedMedicine.expiryDate) && remainingAfterDispense !== null && remainingAfterDispense <= selectedMedicine.lowStockThreshold && remainingAfterDispense >= 0 && (
-                    <Alert className="border-amber-200 bg-amber-50 text-amber-800">
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertDescription>Stock will be below threshold after dispensing.</AlertDescription>
-                    </Alert>
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                      <Alert className="border-amber-200 bg-amber-50 text-amber-800 shadow-sm">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>Stock will be below threshold after dispensing.</AlertDescription>
+                      </Alert>
+                    </motion.div>
                   )}
 
                   {remainingAfterDispense !== null && remainingAfterDispense < 0 && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>Insufficient stock. Cannot dispense {watchQty} units.</AlertDescription>
-                    </Alert>
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
+                      <Alert variant="destructive" className="shadow-sm border-red-200">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription className="font-semibold">Insufficient stock. Cannot dispense {watchQty} units.</AlertDescription>
+                      </Alert>
+                    </motion.div>
                   )}
+                  </AnimatePresence>
                 </div>
               )}
 
-              <Button
-                type="submit"
-                disabled={submitting || (selectedMedicine ? isExpired(selectedMedicine.expiryDate) : false) || (remainingAfterDispense !== null && remainingAfterDispense < 0)}
-                className="w-full sm:w-auto"
-                data-testid="button-submit-dispense"
-              >
-                {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Pill className="mr-2 h-4 w-4" />}
-                Record Dispensing
-              </Button>
+              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  type="submit"
+                  disabled={submitting || (selectedMedicine ? isExpired(selectedMedicine.expiryDate) : false) || (remainingAfterDispense !== null && remainingAfterDispense < 0)}
+                  className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 h-11 px-8 rounded-full"
+                  data-testid="button-submit-dispense"
+                >
+                  {submitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Pill className="mr-2 h-5 w-5" />}
+                  Record Dispensing
+                </Button>
+              </motion.div>
             </form>
           </Form>
         </CardContent>
-      </Card>
+        </Card>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            Dispensing History
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <motion.div variants={itemVariants}>
+        <Card className="overflow-hidden border shadow-sm">
+          <div className="flex items-center gap-2 border-b bg-muted/40 px-6 py-4">
+            <History className="h-5 w-5 text-indigo-600" />
+            <CardTitle className="text-lg">Dispensing History</CardTitle>
+          </div>
+          <CardContent className="p-0">
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -316,7 +371,11 @@ export default function Dispensing() {
                   </TableRow>
                 ) : (
                   records.map((rec) => (
-                    <TableRow key={rec.id}>
+                    <motion.tr 
+                      key={rec.id}
+                      variants={rowVariants}
+                      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    >
                       <TableCell className="font-medium">{rec.medicineName}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-blue-600 border-blue-300">{rec.quantityDispensed}</Badge>
@@ -328,14 +387,15 @@ export default function Dispensing() {
                       <TableCell>{rec.dispensedByName}</TableCell>
                       <TableCell>{rec.date ? format(new Date(rec.date), "MMM d, yyyy") : "-"}</TableCell>
                       <TableCell className="text-muted-foreground text-xs max-w-[200px] truncate">{rec.notes || "-"}</TableCell>
-                    </TableRow>
+                    </motion.tr>
                   ))
                 )}
               </TableBody>
             </Table>
           </div>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 }
