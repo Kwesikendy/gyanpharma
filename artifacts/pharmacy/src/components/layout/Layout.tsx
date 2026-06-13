@@ -15,17 +15,20 @@ import {
   WifiOff,
   Wifi,
   RefreshCw,
+  DownloadCloud,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useInstallPWA } from "@/hooks/useInstallPWA";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { userProfile, logout, isAdmin } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isOnline, justCameBack } = useOnlineStatus();
+  const { isInstallable, installPWA } = useInstallPWA();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -208,6 +211,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </span>
             </div>
           </div>
+
+          {isInstallable && (
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="mb-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 bg-emerald-600/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-600 hover:text-white"
+                onClick={installPWA}
+              >
+                <DownloadCloud className="h-4 w-4" />
+                Install App
+              </Button>
+            </motion.div>
+          )}
+
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
             <Button
               variant="outline"
