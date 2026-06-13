@@ -25,7 +25,7 @@ function AnimatedNumber({ value, duration = 1200, isCurrency = false }: { value:
     };
     requestAnimationFrame(tick);
   }, [value, duration]);
-  return <>{isCurrency ? `$${display.toFixed(2)}` : Math.round(display)}</>;
+  return <>{isCurrency ? `GH₵${display.toFixed(2)}` : Math.round(display)}</>;
 }
 
 function FloatingCross({ style }: { style: React.CSSProperties }) {
@@ -444,7 +444,7 @@ export default function Dashboard() {
                           )}
                           {activity.amount !== undefined && (
                             <span className="text-xs font-semibold text-emerald-600 ml-auto bg-emerald-50 px-2 py-0.5 rounded-md">
-                              ${activity.amount.toFixed(2)}
+                              GH₵{activity.amount.toFixed(2)}
                             </span>
                           )}
                         </div>

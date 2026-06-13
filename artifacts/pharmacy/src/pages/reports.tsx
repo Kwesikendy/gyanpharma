@@ -92,7 +92,7 @@ export default function Reports() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
               <div className="bg-gradient-to-br from-emerald-500 to-green-600 px-5 py-2.5 rounded-xl shadow-sm text-white min-w-[160px]">
                 <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider mb-0.5">Total Revenue</p>
-                <p className="text-2xl font-bold">${totalRevenue.toFixed(2)}</p>
+                <p className="text-2xl font-bold">GH₵{totalRevenue.toFixed(2)}</p>
               </div>
               <div className="relative max-w-xs w-full sm:w-[250px]">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -148,10 +148,10 @@ export default function Reports() {
                             <Badge variant="outline" className="text-blue-600 border-blue-200">{r.quantityDispensed}</Badge>
                           </TableCell>
                           <TableCell className="text-muted-foreground">
-                            {r.unitPrice ? `$${r.unitPrice.toFixed(2)}` : "-"}
+                            {r.unitPrice ? `GH₵${r.unitPrice.toFixed(2)}` : "-"}
                           </TableCell>
                           <TableCell className="font-medium text-emerald-600">
-                            {r.totalPrice ? `$${r.totalPrice.toFixed(2)}` : "-"}
+                            {r.totalPrice ? `GH₵${r.totalPrice.toFixed(2)}` : "-"}
                           </TableCell>
                           <TableCell className="text-muted-foreground">{r.patientName || <span className="italic text-xs">Anonymous</span>}</TableCell>
                           <TableCell>{r.dispensedByName}</TableCell>

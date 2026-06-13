@@ -238,7 +238,7 @@ export default function Dispensing() {
                     <div className="flex items-center gap-2 sm:ml-auto">
                       <span className="text-muted-foreground">Cost:</span>
                       <span className="font-bold text-emerald-600">
-                        ${totalPrice.toFixed(2)} <span className="text-muted-foreground font-normal text-xs">(${unitPrice.toFixed(2)} / {selectedMedicine.unit})</span>
+                        GH₵{totalPrice.toFixed(2)} <span className="text-muted-foreground font-normal text-xs">(GH₵{unitPrice.toFixed(2)} / {selectedMedicine.unit})</span>
                       </span>
                     </div>
                   </div>
@@ -322,7 +322,7 @@ export default function Dispensing() {
                         <Badge variant="outline" className="text-blue-600 border-blue-300">{rec.quantityDispensed}</Badge>
                       </TableCell>
                       <TableCell className="font-medium text-emerald-600">
-                        {rec.totalPrice ? `$${rec.totalPrice.toFixed(2)}` : "-"}
+                        {rec.totalPrice ? `GH₵${rec.totalPrice.toFixed(2)}` : "-"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">{rec.patientName || <span className="italic text-xs">Anonymous</span>}</TableCell>
                       <TableCell>{rec.dispensedByName}</TableCell>
