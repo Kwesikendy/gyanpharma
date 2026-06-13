@@ -32,9 +32,9 @@ export function exportMedicinesToCsv(medicines: Medicine[]) {
 }
 
 export function exportDispensingToCsv(records: DispensingRecord[]) {
-  const headers = ["Medicine", "Quantity", "Patient", "Dispensed By", "Date", "Notes"];
+  const headers = ["Medicine", "Quantity", "Unit Price", "Total Price", "Patient", "Dispensed By", "Date", "Notes"];
   const rows = records.map((r) => [
-    r.medicineName, r.quantityDispensed, r.patientName || "", r.dispensedByName, r.date, r.notes || "",
+    r.medicineName, r.quantityDispensed, r.unitPrice || 0, r.totalPrice || 0, r.patientName || "", r.dispensedByName, r.date, r.notes || "",
   ]);
   const csv = [rowToCsv(headers), ...rows.map(rowToCsv)].join("\n");
   download("dispensing_records.csv", csv);

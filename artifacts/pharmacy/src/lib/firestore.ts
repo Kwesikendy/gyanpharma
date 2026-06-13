@@ -87,6 +87,8 @@ export interface DispensingRecord {
   medicineId: string;
   medicineName: string;
   quantityDispensed: number;
+  unitPrice?: number;
+  totalPrice?: number;
   patientName?: string;
   dispensedBy: string;
   dispensedByName: string;
@@ -99,6 +101,8 @@ export interface DispensingInput {
   medicineId: string;
   medicineName: string;
   quantityDispensed: number;
+  unitPrice?: number;
+  totalPrice?: number;
   patientName?: string;
   dispensedBy: string;
   dispensedByName: string;
@@ -132,6 +136,8 @@ export interface DashboardStats {
   expiredCount: number;
   expiringSoonCount: number;
   totalSuppliers: number;
+  todayRevenue: number;
+  itemsSoldToday: number;
   recentActivity: ActivityItem[];
 }
 
@@ -139,6 +145,7 @@ export interface ActivityItem {
   id: string;
   type: "stock_in" | "dispensed" | "medicine_added" | "medicine_updated";
   description: string;
+  amount?: number;
   timestamp: Date | null;
   by?: string;
 }
@@ -254,9 +261,13 @@ export async function addDispensingRecord(input: DispensingInput): Promise<strin
   if (isExpired(medicine.expiryDate)) {
     throw new Error("Warning: This medicine has expired. Dispensing not allowed.");
   }
+  
+  const unitPrice = medicine.price || 0;
+  const totalPrice = unitPrice * input.quantityDispensed;
+
   const batch = writeBatch(db);
   const recordRef = doc(collection(db, "dispensingRecords"));
-  batch.set(recordRef, { ...input, createdAt: serverTimestamp() });
+  batch.set(recordRef, { ...input, unitPrice, totalPrice, createdAt: serverTimestamp() });
   batch.update(doc(db, "medicines", input.medicineId), {
     quantity: currentQty - input.quantityDispensed,
     updatedAt: serverTimestamp(),
@@ -294,11 +305,14 @@ export async function deleteSupplier(id: string): Promise<void> {
 // ─── Dashboard Stats ──────────────────────────────────────────────────────────
 
 export async function getDashboardStats(): Promise<DashboardStats> {
-  const [medicines, suppliers, stockEntriesSnap, dispensingSnap] = await Promise.all([
+  const todayStr = new Date().toISOString().split("T")[0];
+  
+  const [medicines, suppliers, stockEntriesSnap, dispensingSnap, todayDispensingSnap] = await Promise.all([
     getMedicines(),
     getSuppliers(),
     getDocs(query(collection(db, "stockEntries"), orderBy("createdAt", "desc"), limit(5))),
     getDocs(query(collection(db, "dispensingRecords"), orderBy("createdAt", "desc"), limit(5))),
+    getDocs(query(collection(db, "dispensingRecords"), where("date", "==", todayStr))),
   ]);
 
   const lowStockCount = medicines.filter(
@@ -317,6 +331,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       id: d.id,
       type: "dispensed",
       description: `Dispensed ${data.quantityDispensed} ${data.medicineName}${data.patientName ? ` to ${data.patientName}` : ""}`,
+      amount: data.totalPrice,
       timestamp: toDate(data.createdAt),
       by: data.dispensedByName,
     });
@@ -338,12 +353,23 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     return b.timestamp.getTime() - a.timestamp.getTime();
   });
 
+  let todayRevenue = 0;
+  let itemsSoldToday = 0;
+  
+  todayDispensingSnap.forEach((d) => {
+    const data = d.data();
+    todayRevenue += (data.totalPrice || 0);
+    itemsSoldToday += (data.quantityDispensed || 0);
+  });
+
   return {
     totalMedicines: medicines.length,
     lowStockCount,
     expiredCount,
     expiringSoonCount,
     totalSuppliers: suppliers.length,
+    todayRevenue,
+    itemsSoldToday,
     recentActivity: recentActivity.slice(0, 8),
   };
 }

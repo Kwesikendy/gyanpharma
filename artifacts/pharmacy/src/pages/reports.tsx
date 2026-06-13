@@ -54,6 +54,8 @@ export default function Reports() {
     return matchesSearch && matchesFrom && matchesTo;
   });
 
+  const totalRevenue = filteredDispensing.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -86,17 +88,23 @@ export default function Reports() {
         </TabsList>
 
         <TabsContent value="dispensing" className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <div className="relative max-w-xs w-full">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search medicine, patient, pharmacist..."
-                className="pl-8"
-                value={dispensingSearch}
-                onChange={(e) => setDispensingSearch(e.target.value)}
-                data-testid="input-search-dispensing"
-              />
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+              <div className="bg-gradient-to-br from-emerald-500 to-green-600 px-5 py-2.5 rounded-xl shadow-sm text-white min-w-[160px]">
+                <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider mb-0.5">Total Revenue</p>
+                <p className="text-2xl font-bold">${totalRevenue.toFixed(2)}</p>
+              </div>
+              <div className="relative max-w-xs w-full sm:w-[250px]">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search medicine, patient..."
+                  className="pl-8"
+                  value={dispensingSearch}
+                  onChange={(e) => setDispensingSearch(e.target.value)}
+                  data-testid="input-search-dispensing"
+                />
+              </div>
             </div>
             <Button variant="outline" onClick={() => exportDispensingToCsv(filteredDispensing)} disabled={filteredDispensing.length === 0}>
               <Download className="mr-2 h-4 w-4" /> Export CSV ({filteredDispensing.length})
@@ -111,6 +119,8 @@ export default function Reports() {
                     <TableRow>
                       <TableHead>Medicine</TableHead>
                       <TableHead>Qty</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Total</TableHead>
                       <TableHead>Patient</TableHead>
                       <TableHead>Dispensed By</TableHead>
                       <TableHead>Date</TableHead>
@@ -128,7 +138,7 @@ export default function Reports() {
                       ))
                     ) : filteredDispensing.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No dispensing records found.</TableCell>
+                        <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">No dispensing records found.</TableCell>
                       </TableRow>
                     ) : (
                       filteredDispensing.map((r) => (
@@ -136,6 +146,12 @@ export default function Reports() {
                           <TableCell className="font-medium">{r.medicineName}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-blue-600 border-blue-200">{r.quantityDispensed}</Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {r.unitPrice ? `$${r.unitPrice.toFixed(2)}` : "-"}
+                          </TableCell>
+                          <TableCell className="font-medium text-emerald-600">
+                            {r.totalPrice ? `$${r.totalPrice.toFixed(2)}` : "-"}
                           </TableCell>
                           <TableCell className="text-muted-foreground">{r.patientName || <span className="italic text-xs">Anonymous</span>}</TableCell>
                           <TableCell>{r.dispensedByName}</TableCell>

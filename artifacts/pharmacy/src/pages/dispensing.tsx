@@ -78,6 +78,9 @@ export default function Dispensing() {
     ? selectedMedicine.quantity - (watchQty || 0)
     : null;
 
+  const unitPrice = selectedMedicine?.price || 0;
+  const totalPrice = unitPrice * (watchQty || 0);
+
   async function onSubmit(data: DispensingFormValues) {
     const medicine = medicines.find((m) => m.id === data.medicineId);
     if (!medicine) return;
@@ -217,19 +220,27 @@ export default function Dispensing() {
 
               {selectedMedicine && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-4 rounded-lg bg-muted p-3 text-sm">
-                    <span className="text-muted-foreground">Available stock:</span>
-                    <span className={`font-bold ${selectedMedicine.quantity <= selectedMedicine.lowStockThreshold ? "text-amber-600" : "text-green-600"}`}>
-                      {selectedMedicine.quantity} {selectedMedicine.unit}
-                    </span>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 rounded-lg bg-muted p-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">Stock:</span>
+                      <span className={`font-bold ${selectedMedicine.quantity <= selectedMedicine.lowStockThreshold ? "text-amber-600" : "text-green-600"}`}>
+                        {selectedMedicine.quantity} {selectedMedicine.unit}
+                      </span>
+                    </div>
                     {remainingAfterDispense !== null && (
-                      <>
-                        <span className="text-muted-foreground">→ After dispense:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">→ After:</span>
                         <span className={`font-bold ${remainingAfterDispense < 0 ? "text-destructive" : remainingAfterDispense <= selectedMedicine.lowStockThreshold ? "text-amber-600" : ""}`}>
                           {remainingAfterDispense} {selectedMedicine.unit}
                         </span>
-                      </>
+                      </div>
                     )}
+                    <div className="flex items-center gap-2 sm:ml-auto">
+                      <span className="text-muted-foreground">Cost:</span>
+                      <span className="font-bold text-emerald-600">
+                        ${totalPrice.toFixed(2)} <span className="text-muted-foreground font-normal text-xs">(${unitPrice.toFixed(2)} / {selectedMedicine.unit})</span>
+                      </span>
+                    </div>
                   </div>
 
                   {isExpired(selectedMedicine.expiryDate) && (
@@ -283,6 +294,7 @@ export default function Dispensing() {
                 <TableRow>
                   <TableHead>Medicine</TableHead>
                   <TableHead>Qty Dispensed</TableHead>
+                  <TableHead>Amount</TableHead>
                   <TableHead>Patient</TableHead>
                   <TableHead>Dispensed By</TableHead>
                   <TableHead>Date</TableHead>
@@ -300,7 +312,7 @@ export default function Dispensing() {
                   ))
                 ) : records.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No dispensing records yet.</TableCell>
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">No dispensing records yet.</TableCell>
                   </TableRow>
                 ) : (
                   records.map((rec) => (
@@ -308,6 +320,9 @@ export default function Dispensing() {
                       <TableCell className="font-medium">{rec.medicineName}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-blue-600 border-blue-300">{rec.quantityDispensed}</Badge>
+                      </TableCell>
+                      <TableCell className="font-medium text-emerald-600">
+                        {rec.totalPrice ? `$${rec.totalPrice.toFixed(2)}` : "-"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">{rec.patientName || <span className="italic text-xs">Anonymous</span>}</TableCell>
                       <TableCell>{rec.dispensedByName}</TableCell>

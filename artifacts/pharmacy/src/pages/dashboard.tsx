@@ -4,14 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Package, AlertTriangle, AlertCircle, ArrowDownToLine,
   Pill, TrendingUp, Activity, Plus, Cross, Stethoscope,
-  HeartPulse, ShieldCheck,
+  HeartPulse, ShieldCheck, DollarSign, ShoppingCart
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
-function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: number }) {
+function AnimatedNumber({ value, duration = 1200, isCurrency = false }: { value: number; duration?: number; isCurrency?: boolean }) {
   const [display, setDisplay] = useState(0);
   useEffect(() => {
     if (value === 0) { setDisplay(0); return; }
@@ -20,12 +20,12 @@ function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: 
       const elapsed = Date.now() - start;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(eased * value));
+      setDisplay(eased * value);
       if (progress < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   }, [value, duration]);
-  return <>{display}</>;
+  return <>{isCurrency ? `$${display.toFixed(2)}` : Math.round(display)}</>;
 }
 
 function FloatingCross({ style }: { style: React.CSSProperties }) {
@@ -141,6 +141,29 @@ export default function Dashboard() {
       badge: "Remove ASAP",
       badgeIcon: Activity,
     },
+    {
+      title: "Today's Revenue",
+      value: stats.todayRevenue || 0,
+      sub: "Total sales today",
+      icon: DollarSign,
+      gradient: "from-blue-500 to-indigo-600",
+      glow: "shadow-blue-200",
+      ring: "bg-blue-400",
+      badge: "Revenue",
+      badgeIcon: Activity,
+      isCurrency: true,
+    },
+    {
+      title: "Items Sold Today",
+      value: stats.itemsSoldToday || 0,
+      sub: "Total units dispensed",
+      icon: ShoppingCart,
+      gradient: "from-purple-500 to-violet-600",
+      glow: "shadow-purple-200",
+      ring: "bg-purple-400",
+      badge: "Volume",
+      badgeIcon: TrendingUp,
+    },
   ];
 
   const floatingPositions = [
@@ -247,7 +270,7 @@ export default function Dashboard() {
       {/* ── Stat Cards ── */}
       <motion.div
         variants={containerVariants}
-        className="grid gap-4 md:grid-cols-3"
+        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
       >
         {statCards.map((card, i) => (
           <motion.div
@@ -268,7 +291,7 @@ export default function Dashboard() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.3 + i * 0.1, duration: 0.5, type: "spring" }}
                     >
-                      <AnimatedNumber value={card.value} duration={1000 + i * 200} />
+                      <AnimatedNumber value={card.value} duration={1000 + i * 200} isCurrency={card.isCurrency} />
                     </motion.div>
                     <p className="text-white/70 text-xs mt-0.5">{card.sub}</p>
                   </div>
@@ -418,6 +441,11 @@ export default function Dashboard() {
                           </span>
                           {activity.by && (
                             <span className="text-xs text-muted-foreground">· {activity.by}</span>
+                          )}
+                          {activity.amount !== undefined && (
+                            <span className="text-xs font-semibold text-emerald-600 ml-auto bg-emerald-50 px-2 py-0.5 rounded-md">
+                              ${activity.amount.toFixed(2)}
+                            </span>
                           )}
                         </div>
                       </div>
