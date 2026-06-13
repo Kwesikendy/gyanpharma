@@ -1,12 +1,82 @@
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Settings, User, ShieldCheck, Mail, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Settings,
+  User,
+  ShieldCheck,
+  Mail,
+  Calendar,
+  Download,
+  Package,
+  ArrowDownToLine,
+  Pill,
+  Users,
+  Truck,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  DatabaseBackup,
+  Clock,
+} from "lucide-react";
 import { format } from "date-fns";
+import { exportAllData } from "@/lib/firestore";
+import { motion, AnimatePresence } from "framer-motion";
+
+type BackupState = "idle" | "loading" | "success" | "error";
 
 export default function SettingsPage() {
-  const { userProfile } = useAuth();
+  const { userProfile, isAdmin } = useAuth();
+  const [backupState, setBackupState] = useState<BackupState>("idle");
+  const [backupCounts, setBackupCounts] = useState<Record<string, number> | null>(null);
+  const [lastBackup, setLastBackup] = useState<string | null>(
+    () => localStorage.getItem("gyanchem_last_backup")
+  );
+  const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleExport() {
+    if (!userProfile?.email) return;
+    setBackupState("loading");
+    setErrorMsg("");
+    try {
+      const data = await exportAllData(userProfile.email);
+      setBackupCounts(data.meta.counts);
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const ts = format(new Date(), "yyyy-MM-dd_HH-mm");
+      a.href = url;
+      a.download = `gyanchem-backup-${ts}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      const now = new Date().toISOString();
+      localStorage.setItem("gyanchem_last_backup", now);
+      setLastBackup(now);
+      setBackupState("success");
+      setTimeout(() => setBackupState("idle"), 5000);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Export failed");
+      setBackupState("error");
+      setTimeout(() => setBackupState("idle"), 6000);
+    }
+  }
+
+  const collectionMeta = [
+    { key: "medicines", label: "Medicines (Inventory)", icon: Package, color: "text-emerald-600 bg-emerald-50" },
+    { key: "stockEntries", label: "Stock Entries", icon: ArrowDownToLine, color: "text-blue-600 bg-blue-50" },
+    { key: "dispensingRecords", label: "Dispensing Records", icon: Pill, color: "text-violet-600 bg-violet-50" },
+    { key: "suppliers", label: "Suppliers", icon: Truck, color: "text-amber-600 bg-amber-50" },
+    { key: "users", label: "Users", icon: Users, color: "text-rose-600 bg-rose-50" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -15,7 +85,8 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
       </div>
 
-      <div className="max-w-lg">
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* ── Account Information ── */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -72,38 +143,151 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* ── Access Rights ── */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Access Rights</CardTitle>
+            <CardDescription>What you can do based on your role</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-1">
+              {[
+                { label: "View inventory", allowed: true },
+                { label: "Add medicines", allowed: userProfile?.role === "admin" },
+                { label: "Edit medicines", allowed: userProfile?.role === "admin" },
+                { label: "Delete medicines", allowed: userProfile?.role === "admin" },
+                { label: "Log stock entry", allowed: true },
+                { label: "Record dispensing", allowed: true },
+                { label: "View reports & export", allowed: true },
+                { label: "Manage users", allowed: userProfile?.role === "admin" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between py-2 border-b last:border-0">
+                  <span className="text-sm">{item.label}</span>
+                  <Badge
+                    variant={item.allowed ? "default" : "secondary"}
+                    className={item.allowed ? "bg-green-100 text-green-700 border-green-200" : "bg-muted text-muted-foreground"}
+                  >
+                    {item.allowed ? "Allowed" : "Restricted"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Access Rights</CardTitle>
-          <CardDescription>What you can do based on your role</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              { label: "View inventory", allowed: true },
-              { label: "Add medicines", allowed: userProfile?.role === "admin" },
-              { label: "Edit medicines", allowed: userProfile?.role === "admin" },
-              { label: "Delete medicines", allowed: userProfile?.role === "admin" },
-              { label: "Log stock entry", allowed: true },
-              { label: "Record dispensing", allowed: true },
-              { label: "View reports & export", allowed: true },
-              { label: "Manage users", allowed: userProfile?.role === "admin" },
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between py-2 border-b last:border-0">
-                <span className="text-sm">{item.label}</span>
-                <Badge
-                  variant={item.allowed ? "default" : "secondary"}
-                  className={item.allowed ? "bg-green-100 text-green-700 border-green-200" : "bg-muted text-muted-foreground"}
+      {/* ── Data Backup — Admin only ── */}
+      {isAdmin && (
+        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50/60 to-white">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-emerald-800">
+              <DatabaseBackup className="h-5 w-5 text-emerald-600" />
+              Data Backup
+            </CardTitle>
+            <CardDescription>
+              Export a full copy of all Firestore data as a JSON file. Keep this safe — you can use it to restore everything if you ever rebuild the system.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {/* Collection breakdown */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {collectionMeta.map(({ key, label, icon: Icon, color }) => (
+                <div
+                  key={key}
+                  className="flex flex-col items-center gap-1.5 rounded-xl border bg-white p-3 text-center shadow-sm"
                 >
-                  {item.allowed ? "Allowed" : "Restricted"}
-                </Badge>
+                  <div className={`flex h-9 w-9 items-center justify-center rounded-full ${color}`}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <AnimatePresence mode="wait">
+                    {backupCounts ? (
+                      <motion.span
+                        key="count"
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-lg font-bold text-foreground"
+                      >
+                        {backupCounts[key] ?? 0}
+                      </motion.span>
+                    ) : (
+                      <span className="text-lg font-bold text-muted-foreground">—</span>
+                    )}
+                  </AnimatePresence>
+                  <span className="text-[11px] text-muted-foreground leading-tight">{label}</span>
+                </div>
+              ))}
+            </div>
+
+            <Separator />
+
+            {/* Last backup info */}
+            {lastBackup && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4 shrink-0" />
+                <span>
+                  Last backup: <span className="font-medium text-foreground">{format(new Date(lastBackup), "MMMM d, yyyy 'at' h:mm a")}</span>
+                </span>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            )}
+
+            {/* Status feedback */}
+            <AnimatePresence>
+              {backupState === "success" && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700"
+                >
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>
+                    Backup downloaded successfully —{" "}
+                    {backupCounts && Object.values(backupCounts).reduce((a, b) => a + b, 0)} records exported.
+                  </span>
+                </motion.div>
+              )}
+              {backupState === "error" && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
+                >
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{errorMsg || "Export failed. Make sure you are connected to the internet."}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Export button */}
+            <Button
+              onClick={handleExport}
+              disabled={backupState === "loading"}
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+              size="lg"
+            >
+              {backupState === "loading" ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Fetching all data…
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Export Full Backup (.json)
+                </>
+              )}
+            </Button>
+
+            <p className="text-xs text-muted-foreground">
+              The downloaded file contains every medicine, stock entry, dispensing record, supplier, and user account stored in Firebase.
+              All timestamps are preserved as ISO-8601 strings so they can be re-imported exactly.
+              <strong className="text-foreground"> Store it somewhere safe — Google Drive, a USB drive, or your email.</strong>
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

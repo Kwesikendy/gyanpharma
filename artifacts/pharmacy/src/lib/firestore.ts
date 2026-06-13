@@ -381,3 +381,82 @@ export function getExpiringMedicines(medicines: Medicine[], days = 30): Medicine
 }
 
 export { isExpired, isExpiringSoon };
+
+// ─── Full Data Backup ─────────────────────────────────────────────────────────
+
+export interface BackupData {
+  meta: {
+    exportedAt: string;
+    exportedBy: string;
+    appName: string;
+    version: string;
+    counts: Record<string, number>;
+  };
+  medicines: Record<string, unknown>[];
+  stockEntries: Record<string, unknown>[];
+  dispensingRecords: Record<string, unknown>[];
+  suppliers: Record<string, unknown>[];
+  users: Record<string, unknown>[];
+}
+
+function serializeDoc(id: string, data: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { id };
+  for (const [key, val] of Object.entries(data)) {
+    if (val instanceof Timestamp) {
+      out[key] = val.toDate().toISOString();
+    } else if (val instanceof Date) {
+      out[key] = val.toISOString();
+    } else {
+      out[key] = val;
+    }
+  }
+  return out;
+}
+
+export async function exportAllData(exportedBy: string): Promise<BackupData> {
+  const [medicinesSnap, stockSnap, dispensingSnap, suppliersSnap, usersSnap] =
+    await Promise.all([
+      getDocs(collection(db, "medicines")),
+      getDocs(collection(db, "stockEntries")),
+      getDocs(collection(db, "dispensingRecords")),
+      getDocs(collection(db, "suppliers")),
+      getDocs(collection(db, "users")),
+    ]);
+
+  const medicines = medicinesSnap.docs.map((d) =>
+    serializeDoc(d.id, d.data() as Record<string, unknown>)
+  );
+  const stockEntries = stockSnap.docs.map((d) =>
+    serializeDoc(d.id, d.data() as Record<string, unknown>)
+  );
+  const dispensingRecords = dispensingSnap.docs.map((d) =>
+    serializeDoc(d.id, d.data() as Record<string, unknown>)
+  );
+  const suppliers = suppliersSnap.docs.map((d) =>
+    serializeDoc(d.id, d.data() as Record<string, unknown>)
+  );
+  const users = usersSnap.docs.map((d) =>
+    serializeDoc(d.id, d.data() as Record<string, unknown>)
+  );
+
+  return {
+    meta: {
+      exportedAt: new Date().toISOString(),
+      exportedBy,
+      appName: "Gyan Chemicals Pharmacy Manager",
+      version: "1.0",
+      counts: {
+        medicines: medicines.length,
+        stockEntries: stockEntries.length,
+        dispensingRecords: dispensingRecords.length,
+        suppliers: suppliers.length,
+        users: users.length,
+      },
+    },
+    medicines,
+    stockEntries,
+    dispensingRecords,
+    suppliers,
+    users,
+  };
+}
