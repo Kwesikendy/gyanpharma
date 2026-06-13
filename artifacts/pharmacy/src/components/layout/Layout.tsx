@@ -12,15 +12,20 @@ import {
   LogOut,
   Menu,
   X,
+  WifiOff,
+  Wifi,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { userProfile, logout, isAdmin } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isOnline, justCameBack } = useOnlineStatus();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -34,6 +39,47 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
+      {/* ── Offline / Back-Online Banner ── */}
+      <AnimatePresence>
+        {!isOnline && (
+          <motion.div
+            key="offline-banner"
+            initial={{ y: -48, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -48, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-2 bg-amber-500 text-white text-sm font-medium py-2.5 px-4 shadow-lg"
+          >
+            <motion.div
+              animate={{ rotate: [0, -15, 15, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <WifiOff className="h-4 w-4 shrink-0" />
+            </motion.div>
+            <span>You're offline — data shown from local cache. Changes will sync when reconnected.</span>
+          </motion.div>
+        )}
+        {justCameBack && (
+          <motion.div
+            key="online-banner"
+            initial={{ y: -48, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -48, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-2 bg-emerald-600 text-white text-sm font-medium py-2.5 px-4 shadow-lg"
+          >
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            >
+              <RefreshCw className="h-4 w-4 shrink-0" />
+            </motion.div>
+            <Wifi className="h-4 w-4 shrink-0" />
+            <span>Back online — syncing your data with Firebase…</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
@@ -127,13 +173,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        {/* User footer */}
+        {/* Offline dot indicator in sidebar footer */}
         <motion.div
           className="p-4 border-t border-sidebar-border bg-sidebar-accent/30"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
+          {/* Connectivity indicator */}
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <motion.div
+              className={`h-2 w-2 rounded-full ${isOnline ? "bg-emerald-400" : "bg-amber-400"}`}
+              animate={isOnline ? { scale: [1, 1.3, 1] } : { opacity: [1, 0.4, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <span className="text-xs text-sidebar-foreground/60">
+              {isOnline ? "Connected" : "Offline — cached data"}
+            </span>
+          </div>
+
           <div className="flex items-center gap-3 mb-4">
             <motion.div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground font-bold"
@@ -180,9 +238,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="font-semibold">Gyan Chemicals</div>
+          {/* Mobile offline dot */}
+          <div className="ml-auto flex items-center gap-1.5">
+            <motion.div
+              className={`h-2 w-2 rounded-full ${isOnline ? "bg-emerald-500" : "bg-amber-500"}`}
+              animate={!isOnline ? { opacity: [1, 0.3, 1] } : {}}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <span className="text-xs text-muted-foreground">
+              {isOnline ? "Online" : "Offline"}
+            </span>
+          </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-background">
+        <main
+          className={cn(
+            "flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-background transition-all duration-300",
+            (!isOnline || justCameBack) && "pt-14 md:pt-14"
+          )}
+        >
           <div className="mx-auto max-w-7xl">
             <motion.div
               key={location}
