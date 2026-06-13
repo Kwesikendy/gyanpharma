@@ -1,83 +1,106 @@
 import { useEffect, useState } from "react";
 import { getDashboardStats, DashboardStats } from "@/lib/firestore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, AlertTriangle, AlertCircle, Clock, ArrowDownToLine, Pill } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Package, AlertTriangle, AlertCircle, ArrowDownToLine,
+  Pill, TrendingUp, Activity, Plus, Cross, Stethoscope,
+  HeartPulse, ShieldCheck,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
-function AnimatedNumber({ value }: { value: number }) {
+function AnimatedNumber({ value, duration = 1200 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);
-
   useEffect(() => {
     if (value === 0) { setDisplay(0); return; }
-    let start = 0;
-    const duration = 900;
-    const step = Math.ceil(value / (duration / 16));
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= value) {
-        setDisplay(value);
-        clearInterval(timer);
-      } else {
-        setDisplay(start);
-      }
-    }, 16);
-    return () => clearInterval(timer);
-  }, [value]);
-
+    const start = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(eased * value));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [value, duration]);
   return <>{display}</>;
 }
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: (i: number) => ({
-    opacity: 1, y: 0, scale: 1,
-    transition: { delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-  }),
+function FloatingCross({ style }: { style: React.CSSProperties }) {
+  return (
+    <motion.div
+      style={style}
+      className="absolute text-white/10 pointer-events-none select-none"
+      animate={{ y: [-10, 10, -10], rotate: [0, 15, -15, 0] }}
+      transition={{ duration: 6 + Math.random() * 4, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <Plus className="w-8 h-8" />
+    </motion.div>
+  );
+}
+
+function PulseRing({ color }: { color: string }) {
+  return (
+    <motion.div
+      className={`absolute inset-0 rounded-full ${color} opacity-30`}
+      animate={{ scale: [1, 1.5, 1.5], opacity: [0.3, 0, 0] }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+    />
+  );
+}
+
+const containerVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
 };
 
-const listVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.3 } },
+const cardVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.94 },
+  visible: {
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const slideUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
 const rowVariants = {
-  hidden: { opacity: 0, x: -20 },
+  hidden: { opacity: 0, x: -16 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 export default function Dashboard() {
+  const { userProfile } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    getDashboardStats()
-      .then(setStats)
-      .finally(() => setLoading(false));
+    getDashboardStats().then(setStats).finally(() => setLoading(false));
+    const tick = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(tick);
   }, []);
+
+  const greeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  };
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-[100px]" />
-                <Skeleton className="h-4 w-4" />
-              </CardHeader>
-              <CardContent><Skeleton className="h-8 w-[60px]" /></CardContent>
-            </Card>
-          ))}
+        <Skeleton className="h-40 w-full rounded-2xl" />
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-36 rounded-2xl" />)}
         </div>
-        <Card>
-          <CardHeader><Skeleton className="h-6 w-[150px]" /></CardHeader>
-          <CardContent className="space-y-4">
-            {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}
-          </CardContent>
-        </Card>
+        <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     );
   }
@@ -88,143 +111,325 @@ export default function Dashboard() {
     {
       title: "Total Medicines",
       value: stats.totalMedicines,
-      sub: "Active items in catalog",
+      sub: "Items in catalog",
       icon: Package,
-      color: "text-primary",
-      border: "border-l-primary",
+      gradient: "from-emerald-500 to-green-600",
+      glow: "shadow-emerald-200",
+      ring: "bg-emerald-400",
+      badge: "All active",
+      badgeIcon: ShieldCheck,
     },
     {
       title: "Low Stock",
       value: stats.lowStockCount,
-      sub: "Items below threshold",
+      sub: "Need restocking",
       icon: AlertTriangle,
-      color: "text-amber-500",
-      border: "border-l-amber-500",
-      valueClass: "text-amber-600",
+      gradient: "from-amber-400 to-orange-500",
+      glow: "shadow-amber-200",
+      ring: "bg-amber-400",
+      badge: "Action needed",
+      badgeIcon: TrendingUp,
     },
     {
-      title: "Expired",
+      title: "Expired Items",
       value: stats.expiredCount,
-      sub: "Items past expiry date",
+      sub: "Past expiry date",
       icon: AlertCircle,
-      color: "text-destructive",
-      border: "border-l-destructive",
-      valueClass: "text-destructive",
+      gradient: "from-rose-500 to-red-600",
+      glow: "shadow-rose-200",
+      ring: "bg-rose-400",
+      badge: "Remove ASAP",
+      badgeIcon: Activity,
     },
   ];
 
+  const floatingPositions = [
+    { top: "10%", left: "5%" },
+    { top: "60%", left: "12%" },
+    { top: "25%", right: "8%" },
+    { top: "70%", right: "15%" },
+    { top: "45%", left: "45%" },
+  ];
+
   return (
-    <div className="space-y-6">
+    <motion.div
+      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* ── Hero Banner ── */}
       <motion.div
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        variants={cardVariants}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 p-7 text-white shadow-xl shadow-emerald-200"
       >
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
-        <div className="text-sm text-muted-foreground flex items-center gap-2">
-          <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }}>
-            <Clock className="h-4 w-4" />
+        {/* Floating decorative crosses */}
+        {floatingPositions.map((pos, i) => (
+          <FloatingCross key={i} style={pos as React.CSSProperties} />
+        ))}
+
+        {/* Large background circle */}
+        <motion.div
+          className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/5"
+          animate={{ scale: [1, 1.08, 1], rotate: [0, 10, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-white/5"
+          animate={{ scale: [1, 1.12, 1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="flex items-center gap-2 mb-1"
+            >
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+              >
+                <HeartPulse className="h-5 w-5 text-emerald-200" />
+              </motion.div>
+              <span className="text-emerald-100 text-sm font-medium tracking-wide uppercase">
+                Gyan Chemicals
+              </span>
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="text-3xl font-bold tracking-tight"
+            >
+              {greeting()}, {userProfile?.displayName?.split(" ")[0] || "there"} 👋
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="mt-1 text-emerald-100 text-sm"
+            >
+              {format(new Date(), "EEEE, MMMM d, yyyy")} — Your pharmacy at a glance
+            </motion.p>
+          </div>
+
+          {/* Live clock */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="flex flex-col items-center justify-center bg-white/10 backdrop-blur-sm rounded-2xl px-6 py-3 border border-white/20 min-w-[110px]"
+          >
+            <motion.span
+              key={time.getSeconds()}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-2xl font-bold font-mono tabular-nums"
+            >
+              {format(time, "HH:mm")}
+            </motion.span>
+            <motion.span
+              key={`s-${time.getSeconds()}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-xs text-emerald-200 font-mono"
+            >
+              {format(time, "ss")}s
+            </motion.span>
+            <span className="text-xs text-emerald-100 mt-0.5">Live</span>
           </motion.div>
-          Last updated: {new Date().toLocaleTimeString()}
         </div>
       </motion.div>
 
-      {/* Stat Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* ── Stat Cards ── */}
+      <motion.div
+        variants={containerVariants}
+        className="grid gap-4 md:grid-cols-3"
+      >
         {statCards.map((card, i) => (
           <motion.div
             key={card.title}
-            custom={i}
             variants={cardVariants}
-            initial="hidden"
-            animate="visible"
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
+            whileTap={{ scale: 0.97 }}
           >
-            <Card className={`border-l-4 ${card.border} h-full`}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-                <motion.div
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.4 }}
-                >
-                  <card.icon className={`h-4 w-4 ${card.color}`} />
-                </motion.div>
-              </CardHeader>
-              <CardContent>
-                <div className={`text-2xl font-bold ${card.valueClass || ""}`}>
-                  <AnimatedNumber value={card.value} />
+            <Card className={`relative overflow-hidden border-0 shadow-lg ${card.glow} h-full`}>
+              {/* Gradient header */}
+              <div className={`bg-gradient-to-br ${card.gradient} p-5 text-white`}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-white/80 text-xs font-medium uppercase tracking-wider mb-1">{card.title}</p>
+                    <motion.div
+                      className="text-4xl font-bold"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3 + i * 0.1, duration: 0.5, type: "spring" }}
+                    >
+                      <AnimatedNumber value={card.value} duration={1000 + i * 200} />
+                    </motion.div>
+                    <p className="text-white/70 text-xs mt-0.5">{card.sub}</p>
+                  </div>
+                  {/* Icon with pulse ring */}
+                  <div className="relative">
+                    <PulseRing color={card.ring} />
+                    <motion.div
+                      className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm"
+                      animate={{ rotate: [0, -5, 5, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, delay: i * 0.7 }}
+                    >
+                      <card.icon className="h-6 w-6 text-white" />
+                    </motion.div>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
+              </div>
+
+              {/* Footer row */}
+              <CardContent className="py-3 px-5 bg-white">
+                <div className="flex items-center gap-2">
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
+                  >
+                    <card.badgeIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                  </motion.div>
+                  <span className="text-xs text-muted-foreground">{card.badge}</span>
+                  <motion.div
+                    className="ml-auto h-1.5 rounded-full bg-muted overflow-hidden"
+                    style={{ width: 60 }}
+                  >
+                    <motion.div
+                      className={`h-full rounded-full bg-gradient-to-r ${card.gradient}`}
+                      initial={{ width: 0 }}
+                      animate={{ width: card.value > 0 ? "70%" : "8%" }}
+                      transition={{ delay: 0.6 + i * 0.15, duration: 0.9, ease: "easeOut" }}
+                    />
+                  </motion.div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Recent Activity */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45, duration: 0.5 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AnimatePresence>
+      {/* ── Recent Activity ── */}
+      <motion.div variants={slideUp}>
+        <Card className="overflow-hidden border shadow-md">
+          {/* Card header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+            <div className="flex items-center gap-2">
+              <motion.div
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100"
+              >
+                <Activity className="h-4 w-4 text-emerald-600" />
+              </motion.div>
+              <div>
+                <h2 className="font-semibold text-sm text-foreground">Recent Activity</h2>
+                <p className="text-xs text-muted-foreground">{stats.recentActivity.length} recent events</p>
+              </div>
+            </div>
+            <motion.div
+              className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium"
+              animate={{ opacity: [1, 0.5, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+              Live
+            </motion.div>
+          </div>
+
+          <CardContent className="p-0">
+            <AnimatePresence mode="wait">
               {stats.recentActivity.length === 0 ? (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-6 text-muted-foreground"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3"
                 >
-                  No recent activity
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Stethoscope className="h-10 w-10 text-emerald-200" />
+                  </motion.div>
+                  <p className="text-sm">No recent activity yet</p>
+                  <p className="text-xs text-muted-foreground/60">Activity will appear here as your team works</p>
                 </motion.div>
               ) : (
                 <motion.div
-                  className="space-y-4"
-                  variants={listVariants}
+                  variants={{ visible: { transition: { staggerChildren: 0.06, delayChildren: 0.25 } } }}
                   initial="hidden"
                   animate="visible"
                 >
-                  {stats.recentActivity.map((activity) => (
+                  {stats.recentActivity.map((activity, idx) => (
                     <motion.div
                       key={activity.id}
                       variants={rowVariants}
-                      className="flex items-start gap-4 border-b last:border-0 pb-4 last:pb-0"
+                      whileHover={{ backgroundColor: "rgba(16,185,129,0.03)", x: 4, transition: { duration: 0.15 } }}
+                      className="flex items-start gap-4 px-6 py-4 border-b last:border-0 cursor-default transition-colors"
                     >
-                      <motion.div
-                        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                          activity.type === "dispensed"
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-green-100 text-green-600"
-                        }`}
-                        whileHover={{ scale: 1.2, rotate: 10 }}
-                      >
-                        {activity.type === "dispensed" ? (
-                          <Pill className="h-4 w-4" />
-                        ) : (
-                          <ArrowDownToLine className="h-4 w-4" />
+                      {/* Timeline dot + icon */}
+                      <div className="relative flex flex-col items-center">
+                        <motion.div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-sm ${
+                            activity.type === "dispensed"
+                              ? "bg-blue-50 text-blue-600 shadow-blue-100"
+                              : "bg-emerald-50 text-emerald-600 shadow-emerald-100"
+                          }`}
+                          whileHover={{ scale: 1.15, rotate: 8 }}
+                          transition={{ type: "spring", stiffness: 400 }}
+                        >
+                          {activity.type === "dispensed" ? (
+                            <Pill className="h-4 w-4" />
+                          ) : (
+                            <ArrowDownToLine className="h-4 w-4" />
+                          )}
+                        </motion.div>
+                        {idx < stats.recentActivity.length - 1 && (
+                          <motion.div
+                            className="w-px bg-emerald-100 mt-1"
+                            initial={{ height: 0 }}
+                            animate={{ height: 20 }}
+                            transition={{ delay: 0.5 + idx * 0.06, duration: 0.3 }}
+                          />
                         )}
-                      </motion.div>
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">{activity.description}</p>
-                        <div className="flex items-center text-xs text-muted-foreground gap-2">
-                          <span>
+                      </div>
+
+                      <div className="flex-1 min-w-0 pt-1">
+                        <p className="text-sm font-medium leading-snug text-foreground truncate">
+                          {activity.description}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium ${
+                            activity.type === "dispensed"
+                              ? "bg-blue-50 text-blue-600"
+                              : "bg-emerald-50 text-emerald-700"
+                          }`}>
+                            {activity.type === "dispensed" ? "Dispensed" : "Stock In"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
                             {activity.timestamp
-                              ? format(activity.timestamp, "MMM d, yyyy h:mm a")
+                              ? format(activity.timestamp, "MMM d, h:mm a")
                               : "Unknown time"}
                           </span>
                           {activity.by && (
-                            <>
-                              <span>•</span>
-                              <span>By {activity.by}</span>
-                            </>
+                            <span className="text-xs text-muted-foreground">· {activity.by}</span>
                           )}
                         </div>
                       </div>
+
+                      {/* Animated right chevron */}
+                      <motion.div
+                        className="shrink-0 text-muted-foreground/30 self-center"
+                        initial={{ x: -4, opacity: 0 }}
+                        whileHover={{ x: 0, opacity: 1 }}
+                      >
+                        <Cross className="h-3 w-3 rotate-45" />
+                      </motion.div>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -233,6 +438,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+    </motion.div>
   );
 }

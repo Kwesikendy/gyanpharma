@@ -94,7 +94,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE */
+/* LIGHT MODE — Green + White Pharmacy Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -104,55 +104,57 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 220 20% 97%;
-  --foreground: 220 40% 18%;
+  --background: 140 20% 97%;
+  --foreground: 150 40% 10%;
 
-  --border: 220 20% 90%;
+  --border: 140 20% 88%;
 
   --card: 0 0% 100%;
-  --card-foreground: 220 40% 18%;
-  --card-border: 220 20% 90%;
+  --card-foreground: 150 40% 10%;
+  --card-border: 140 20% 88%;
 
-  --sidebar: 220 40% 18%;
-  --sidebar-foreground: 210 20% 95%;
-  --sidebar-border: 220 40% 15%;
-  --sidebar-primary: 210 80% 50%;
+  /* Deep forest green sidebar */
+  --sidebar: 152 55% 12%;
+  --sidebar-foreground: 140 20% 92%;
+  --sidebar-border: 152 55% 9%;
+  --sidebar-primary: 142 72% 45%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 30% 25%;
-  --sidebar-accent-foreground: 210 20% 95%;
-  --sidebar-ring: 210 80% 50%;
+  --sidebar-accent: 152 45% 20%;
+  --sidebar-accent-foreground: 140 20% 95%;
+  --sidebar-ring: 142 72% 45%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 220 40% 18%;
-  --popover-border: 220 20% 90%;
+  --popover-foreground: 150 40% 10%;
+  --popover-border: 140 20% 88%;
 
-  --primary: 210 80% 50%;
+  /* Pharmacy green primary */
+  --primary: 142 72% 35%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 220 40% 18%;
+  --secondary: 140 14% 95%;
+  --secondary-foreground: 150 40% 10%;
 
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 20% 40%;
+  --muted: 140 14% 95%;
+  --muted-foreground: 140 20% 40%;
 
-  --accent: 185 60% 45%;
+  --accent: 162 60% 40%;
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 220 20% 85%;
-  --ring: 210 80% 50%;
-  --chart-1: 210 80% 50%;
-  --chart-2: 185 60% 45%;
-  --chart-3: 140 60% 45%;
-  --chart-4: 40 80% 50%;
+  --input: 140 20% 84%;
+  --ring: 142 72% 35%;
+  --chart-1: 142 72% 35%;
+  --chart-2: 162 60% 40%;
+  --chart-3: 40 80% 50%;
+  --chart-4: 200 70% 50%;
   --chart-5: 0 84% 60%;
 
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
-  --radius: 0.5rem;
+  --radius: 0.6rem;
   
   --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.05);
   --shadow-xs: 0px 1px 3px 0px rgba(0,0,0,0.1);
@@ -184,50 +186,50 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 220 40% 10%;
-  --foreground: 220 20% 95%;
+  --background: 152 30% 8%;
+  --foreground: 140 20% 95%;
 
-  --border: 220 30% 20%;
+  --border: 152 30% 18%;
 
-  --card: 220 40% 12%;
-  --card-foreground: 220 20% 95%;
-  --card-border: 220 30% 20%;
+  --card: 152 30% 10%;
+  --card-foreground: 140 20% 95%;
+  --card-border: 152 30% 18%;
 
-  --sidebar: 220 40% 8%;
-  --sidebar-foreground: 210 20% 90%;
-  --sidebar-border: 220 40% 12%;
-  --sidebar-primary: 210 80% 50%;
+  --sidebar: 152 40% 6%;
+  --sidebar-foreground: 140 20% 90%;
+  --sidebar-border: 152 40% 10%;
+  --sidebar-primary: 142 72% 45%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 30% 15%;
-  --sidebar-accent-foreground: 210 20% 95%;
-  --sidebar-ring: 210 80% 50%;
+  --sidebar-accent: 152 30% 14%;
+  --sidebar-accent-foreground: 140 20% 95%;
+  --sidebar-ring: 142 72% 45%;
 
-  --popover: 220 40% 12%;
-  --popover-foreground: 220 20% 95%;
-  --popover-border: 220 30% 20%;
+  --popover: 152 30% 10%;
+  --popover-foreground: 140 20% 95%;
+  --popover-border: 152 30% 18%;
 
-  --primary: 210 80% 50%;
+  --primary: 142 72% 45%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 30% 20%;
-  --secondary-foreground: 220 20% 95%;
+  --secondary: 152 30% 16%;
+  --secondary-foreground: 140 20% 95%;
 
-  --muted: 220 30% 20%;
-  --muted-foreground: 220 20% 60%;
+  --muted: 152 30% 16%;
+  --muted-foreground: 140 20% 60%;
 
-  --accent: 185 60% 45%;
+  --accent: 162 60% 40%;
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 220 30% 25%;
-  --ring: 210 80% 50%;
+  --input: 152 30% 22%;
+  --ring: 142 72% 45%;
   
-  --chart-1: 210 80% 50%;
-  --chart-2: 185 60% 45%;
-  --chart-3: 140 60% 45%;
-  --chart-4: 40 80% 50%;
+  --chart-1: 142 72% 45%;
+  --chart-2: 162 60% 40%;
+  --chart-3: 40 80% 50%;
+  --chart-4: 200 70% 50%;
   --chart-5: 0 84% 60%;
 
   --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.5);
