@@ -10,15 +10,22 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function useInstallPWA() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
 
   useEffect(() => {
+    // Check if the event already fired before React mounted
+    if ((window as any).deferredPWAEvent) {
+      setDeferredPrompt((window as any).deferredPWAEvent);
+      setIsInstallable(true);
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       // Stash the event so it can be triggered later.
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      (window as any).deferredPWAEvent = e;
+      setDeferredPrompt(e);
       // Update UI notify the user they can install the PWA
       setIsInstallable(true);
     };
