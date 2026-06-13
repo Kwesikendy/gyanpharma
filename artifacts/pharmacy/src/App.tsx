@@ -13,7 +13,6 @@ import Dashboard from "@/pages/dashboard";
 import Inventory from "@/pages/inventory";
 import StockEntry from "@/pages/stock-entry";
 import Dispensing from "@/pages/dispensing";
-import Suppliers from "@/pages/suppliers";
 import Reports from "@/pages/reports";
 import UsersPage from "@/pages/users";
 import SettingsPage from "@/pages/settings";
@@ -38,9 +37,6 @@ function Router() {
       </Route>
       <Route path="/dispensing">
         <ProtectedRoute><Layout><Dispensing /></Layout></ProtectedRoute>
-      </Route>
-      <Route path="/suppliers">
-        <ProtectedRoute><Layout><Suppliers /></Layout></ProtectedRoute>
       </Route>
       <Route path="/reports">
         <ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>

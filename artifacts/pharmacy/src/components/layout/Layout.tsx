@@ -12,7 +12,6 @@ import {
   LogOut,
   Menu,
   X,
-  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,7 +27,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/inventory", label: "Inventory", icon: Package },
     { href: "/stock-entry", label: "Stock Entry", icon: ArrowDownToLine },
     { href: "/dispensing", label: "Dispensing", icon: Pill },
-    { href: "/suppliers", label: "Suppliers", icon: Building2 },
     { href: "/reports", label: "Reports", icon: FileText },
     ...(isAdmin ? [{ href: "/users", label: "Users", icon: Users }] : []),
     { href: "/settings", label: "Settings", icon: Settings },

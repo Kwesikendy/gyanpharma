@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Medicine, MedicineInput, Supplier, MedicineUnit, MedicineStatus } from "@/lib/firestore";
+import { Medicine, MedicineInput, MedicineUnit, MedicineStatus } from "@/lib/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,7 +25,6 @@ const medicineSchema = z.object({
   category: z.string().min(1, "Category is required"),
   quantity: z.coerce.number().int().min(0, "Cannot be negative"),
   unit: z.enum(["tablets", "capsules", "ml", "mg", "units", "vials", "strips", "sachets"]),
-  supplierId: z.string().min(1, "Supplier is required"),
   expiryDate: z.string().min(1, "Expiry date is required"),
   price: z.coerce.number().min(0, "Cannot be negative"),
   batchNumber: z.string().min(1, "Batch number is required"),
@@ -40,16 +39,15 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   medicine?: Medicine | null;
-  suppliers: Supplier[];
   submitting: boolean;
   onSubmit: (data: MedicineInput) => Promise<void>;
 }
 
-export function MedicineDialog({ open, onOpenChange, medicine, suppliers, submitting, onSubmit }: Props) {
+export function MedicineDialog({ open, onOpenChange, medicine, submitting, onSubmit }: Props) {
   const form = useForm<MedicineFormValues>({
     resolver: zodResolver(medicineSchema),
     defaultValues: {
-      name: "", category: "", quantity: 0, unit: "tablets", supplierId: "",
+      name: "", category: "", quantity: 0, unit: "tablets",
       expiryDate: "", price: 0, batchNumber: "", status: "active",
       lowStockThreshold: 20, description: "",
     },
@@ -63,7 +61,6 @@ export function MedicineDialog({ open, onOpenChange, medicine, suppliers, submit
           category: medicine.category,
           quantity: medicine.quantity,
           unit: medicine.unit,
-          supplierId: medicine.supplierId,
           expiryDate: medicine.expiryDate,
           price: medicine.price,
           batchNumber: medicine.batchNumber,
@@ -73,7 +70,7 @@ export function MedicineDialog({ open, onOpenChange, medicine, suppliers, submit
         });
       } else {
         form.reset({
-          name: "", category: "", quantity: 0, unit: "tablets", supplierId: "",
+          name: "", category: "", quantity: 0, unit: "tablets",
           expiryDate: "", price: 0, batchNumber: "", status: "active",
           lowStockThreshold: 20, description: "",
         });
@@ -82,10 +79,10 @@ export function MedicineDialog({ open, onOpenChange, medicine, suppliers, submit
   }, [open, medicine]);
 
   async function handleSubmit(data: MedicineFormValues) {
-    const supplier = suppliers.find((s) => s.id === data.supplierId);
     await onSubmit({
       ...data,
-      supplierName: supplier?.name || "",
+      supplierId: "",
+      supplierName: "",
       unit: data.unit as MedicineUnit,
       status: data.status as MedicineStatus,
     });
@@ -93,7 +90,7 @@ export function MedicineDialog({ open, onOpenChange, medicine, suppliers, submit
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{medicine ? "Edit Medicine" : "Add New Medicine"}</DialogTitle>
         </DialogHeader>
@@ -152,25 +149,8 @@ export function MedicineDialog({ open, onOpenChange, medicine, suppliers, submit
 
               <FormField control={form.control} name="price" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price (₹)</FormLabel>
+                  <FormLabel>Price (GH₵)</FormLabel>
                   <FormControl><Input type="number" min={0} step="0.01" {...field} data-testid="input-price" /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="supplierId" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Supplier</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-supplier">
-                        <SelectValue placeholder="Select supplier..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {suppliers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )} />

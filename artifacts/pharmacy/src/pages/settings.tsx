@@ -15,7 +15,7 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="max-w-lg">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -72,39 +72,6 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>System Information</CardTitle>
-            <CardDescription>Gyan Chemicals Pharmacy Manager</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">System</span>
-              <span className="font-medium">Gyan Chemicals Pharmacy Manager</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Database</span>
-              <span className="font-medium">Firebase Firestore</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Authentication</span>
-              <span className="font-medium">Firebase Auth</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Project</span>
-              <span className="font-medium font-mono text-xs">gyanchemicalstore</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Version</span>
-              <span className="font-medium">1.0.0</span>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <Card>
@@ -121,13 +88,15 @@ export default function SettingsPage() {
               { label: "Delete medicines", allowed: userProfile?.role === "admin" },
               { label: "Log stock entry", allowed: true },
               { label: "Record dispensing", allowed: true },
-              { label: "Manage suppliers", allowed: userProfile?.role === "admin" },
               { label: "View reports & export", allowed: true },
               { label: "Manage users", allowed: userProfile?.role === "admin" },
             ].map((item) => (
               <div key={item.label} className="flex items-center justify-between py-2 border-b last:border-0">
                 <span className="text-sm">{item.label}</span>
-                <Badge variant={item.allowed ? "default" : "secondary"} className={item.allowed ? "bg-green-100 text-green-700 border-green-200" : "bg-muted text-muted-foreground"}>
+                <Badge
+                  variant={item.allowed ? "default" : "secondary"}
+                  className={item.allowed ? "bg-green-100 text-green-700 border-green-200" : "bg-muted text-muted-foreground"}
+                >
                   {item.allowed ? "Allowed" : "Restricted"}
                 </Badge>
               </div>

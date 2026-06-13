@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMedicines, getSuppliers, getStockEntries, addStockEntry, Medicine, Supplier, StockEntry as StockEntryType } from "@/lib/firestore";
+import { getMedicines, getStockEntries, addStockEntry, Medicine, StockEntry as StockEntryType } from "@/lib/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -19,7 +19,6 @@ import { format } from "date-fns";
 const stockEntrySchema = z.object({
   medicineId: z.string().min(1, "Select a medicine"),
   quantityReceived: z.coerce.number().int().positive("Must be a positive number"),
-  supplierId: z.string().min(1, "Select a supplier"),
   batchNumber: z.string().min(1, "Batch number is required"),
   expiryDate: z.string().min(1, "Expiry date is required"),
   dateReceived: z.string().min(1, "Date received is required"),
@@ -32,7 +31,6 @@ export default function StockEntry() {
   const { userProfile } = useAuth();
   const { toast } = useToast();
   const [medicines, setMedicines] = useState<Medicine[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [entries, setEntries] = useState<StockEntryType[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -42,7 +40,6 @@ export default function StockEntry() {
     defaultValues: {
       medicineId: "",
       quantityReceived: 0,
-      supplierId: "",
       batchNumber: "",
       expiryDate: "",
       dateReceived: new Date().toISOString().split("T")[0],
@@ -53,9 +50,8 @@ export default function StockEntry() {
   const fetchData = async () => {
     setLoadingData(true);
     try {
-      const [meds, sups, ents] = await Promise.all([getMedicines(), getSuppliers(), getStockEntries()]);
+      const [meds, ents] = await Promise.all([getMedicines(), getStockEntries()]);
       setMedicines(meds);
-      setSuppliers(sups);
       setEntries(ents.slice(0, 20));
     } finally {
       setLoadingData(false);
@@ -66,22 +62,21 @@ export default function StockEntry() {
 
   async function onSubmit(data: StockEntryFormValues) {
     const medicine = medicines.find((m) => m.id === data.medicineId);
-    const supplier = suppliers.find((s) => s.id === data.supplierId);
-    if (!medicine || !supplier) return;
+    if (!medicine) return;
 
     setSubmitting(true);
     try {
       await addStockEntry({
         ...data,
         medicineName: medicine.name,
-        supplierName: supplier.name,
+        supplierId: "",
+        supplierName: "",
         createdBy: userProfile?.displayName || userProfile?.email || "Unknown",
       });
       toast({ title: "Stock entry logged", description: `Added ${data.quantityReceived} units of ${medicine.name}.` });
       form.reset({
         medicineId: "",
         quantityReceived: 0,
-        supplierId: "",
         batchNumber: "",
         expiryDate: "",
         dateReceived: new Date().toISOString().split("T")[0],
@@ -142,29 +137,6 @@ export default function StockEntry() {
                       <FormControl>
                         <Input type="number" min={1} placeholder="0" {...field} data-testid="input-quantity" />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="supplierId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Supplier</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-supplier">
-                            <SelectValue placeholder="Select supplier..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {suppliers.map((s) => (
-                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -250,7 +222,6 @@ export default function StockEntry() {
                 <TableRow>
                   <TableHead>Medicine</TableHead>
                   <TableHead>Qty Received</TableHead>
-                  <TableHead>Supplier</TableHead>
                   <TableHead>Batch No.</TableHead>
                   <TableHead>Expiry Date</TableHead>
                   <TableHead>Date Received</TableHead>
@@ -261,21 +232,20 @@ export default function StockEntry() {
                 {loadingData ? (
                   Array(4).fill(0).map((_, i) => (
                     <TableRow key={i}>
-                      {Array(7).fill(0).map((_, j) => (
+                      {Array(6).fill(0).map((_, j) => (
                         <TableCell key={j}><Skeleton className="h-4 w-[80px]" /></TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : entries.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">No stock entries yet.</TableCell>
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No stock entries yet.</TableCell>
                   </TableRow>
                 ) : (
                   entries.map((entry) => (
                     <TableRow key={entry.id}>
                       <TableCell className="font-medium">{entry.medicineName}</TableCell>
                       <TableCell className="font-semibold text-green-600">+{entry.quantityReceived}</TableCell>
-                      <TableCell>{entry.supplierName}</TableCell>
                       <TableCell className="text-muted-foreground font-mono text-xs">{entry.batchNumber}</TableCell>
                       <TableCell>{entry.expiryDate ? format(new Date(entry.expiryDate), "MMM d, yyyy") : "-"}</TableCell>
                       <TableCell>{entry.dateReceived ? format(new Date(entry.dateReceived), "MMM d, yyyy") : "-"}</TableCell>

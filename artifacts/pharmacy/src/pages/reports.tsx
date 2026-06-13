@@ -48,7 +48,6 @@ export default function Reports() {
     const matchesSearch =
       !stockSearch ||
       e.medicineName.toLowerCase().includes(stockSearch.toLowerCase()) ||
-      e.supplierName.toLowerCase().includes(stockSearch.toLowerCase()) ||
       e.batchNumber.toLowerCase().includes(stockSearch.toLowerCase());
     const matchesFrom = !dateFrom || e.dateReceived >= dateFrom;
     const matchesTo = !dateTo || e.dateReceived <= dateTo;
@@ -178,7 +177,6 @@ export default function Reports() {
                     <TableRow>
                       <TableHead>Medicine</TableHead>
                       <TableHead>Qty Received</TableHead>
-                      <TableHead>Supplier</TableHead>
                       <TableHead>Batch No.</TableHead>
                       <TableHead>Expiry</TableHead>
                       <TableHead>Date Received</TableHead>
@@ -189,21 +187,20 @@ export default function Reports() {
                     {loading ? (
                       Array(5).fill(0).map((_, i) => (
                         <TableRow key={i}>
-                          {Array(7).fill(0).map((_, j) => (
+                          {Array(6).fill(0).map((_, j) => (
                             <TableCell key={j}><Skeleton className="h-4 w-[80px]" /></TableCell>
                           ))}
                         </TableRow>
                       ))
                     ) : filteredStock.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">No stock entries found.</TableCell>
+                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No stock entries found.</TableCell>
                       </TableRow>
                     ) : (
                       filteredStock.map((e) => (
                         <TableRow key={e.id} data-testid={`row-stock-${e.id}`}>
                           <TableCell className="font-medium">{e.medicineName}</TableCell>
                           <TableCell className="font-semibold text-green-600">+{e.quantityReceived}</TableCell>
-                          <TableCell>{e.supplierName}</TableCell>
                           <TableCell className="font-mono text-xs text-muted-foreground">{e.batchNumber}</TableCell>
                           <TableCell>{e.expiryDate ? format(new Date(e.expiryDate), "MMM d, yyyy") : "-"}</TableCell>
                           <TableCell>{e.dateReceived ? format(new Date(e.dateReceived), "MMM d, yyyy") : "-"}</TableCell>

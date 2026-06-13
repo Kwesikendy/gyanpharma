@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   getMedicines, deleteMedicine, addMedicine, updateMedicine,
-  getSuppliers, Medicine, Supplier, MedicineInput,
+  Medicine, MedicineInput,
   getLowStockMedicines, isExpired, isExpiringSoon,
 } from "@/lib/firestore";
 import { exportMedicinesToCsv } from "@/lib/exportUtils";
@@ -22,7 +22,6 @@ const STATUS_FILTER_ALL = "__all__";
 
 export default function Inventory() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(STATUS_FILTER_ALL);
@@ -36,9 +35,8 @@ export default function Inventory() {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const [meds, sups] = await Promise.all([getMedicines(), getSuppliers()]);
+      const meds = await getMedicines();
       setMedicines(meds);
-      setSuppliers(sups);
     } finally {
       setLoading(false);
     }
@@ -52,8 +50,7 @@ export default function Inventory() {
     const matchesSearch =
       !search ||
       m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.category.toLowerCase().includes(search.toLowerCase()) ||
-      m.supplierName.toLowerCase().includes(search.toLowerCase());
+      m.category.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = categoryFilter === STATUS_FILTER_ALL || m.category === categoryFilter;
     const matchesStatus = statusFilter === STATUS_FILTER_ALL || m.status === statusFilter;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -144,7 +141,7 @@ export default function Inventory() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search name, category, supplier..."
+            placeholder="Search name or category..."
             className="pl-8"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -188,7 +185,6 @@ export default function Inventory() {
               <TableHead>Stock</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Expiry</TableHead>
-              <TableHead>Supplier</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -197,14 +193,14 @@ export default function Inventory() {
             {loading ? (
               Array(6).fill(0).map((_, i) => (
                 <TableRow key={i}>
-                  {Array(8).fill(0).map((_, j) => (
+                  {Array(7).fill(0).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-[80px]" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : filteredMedicines.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                   No medicines found. {isAdmin && !search && <span className="text-primary cursor-pointer hover:underline" onClick={openAdd}>Add your first medicine.</span>}
                 </TableCell>
               </TableRow>
@@ -240,7 +236,7 @@ export default function Inventory() {
                       </div>
                       <div className="text-xs text-muted-foreground">min: {medicine.lowStockThreshold}</div>
                     </TableCell>
-                    <TableCell className="text-sm">₹{medicine.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-sm">GH₵{medicine.price.toFixed(2)}</TableCell>
                     <TableCell>
                       <div className={`text-sm ${expired ? "text-destructive font-semibold" : expiringSoon ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
                         {format(new Date(medicine.expiryDate), "MMM d, yyyy")}
@@ -248,7 +244,6 @@ export default function Inventory() {
                         {!expired && expiringSoon && <div className="text-xs">Expiring soon</div>}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{medicine.supplierName}</TableCell>
                     <TableCell>
                       <Badge
                         variant={medicine.status === "active" ? "default" : "secondary"}
@@ -305,7 +300,6 @@ export default function Inventory() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           medicine={editingMedicine}
-          suppliers={suppliers}
           submitting={submitting}
           onSubmit={handleSave}
         />

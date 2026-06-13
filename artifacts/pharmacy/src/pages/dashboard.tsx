@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getDashboardStats, DashboardStats } from "@/lib/firestore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, AlertTriangle, AlertCircle, Building2, Clock, ArrowDownToLine, Pill } from "lucide-react";
+import { Package, AlertTriangle, AlertCircle, Clock, ArrowDownToLine, Pill } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,14 +111,6 @@ export default function Dashboard() {
       border: "border-l-destructive",
       valueClass: "text-destructive",
     },
-    {
-      title: "Total Suppliers",
-      value: stats.totalSuppliers,
-      sub: "Registered vendors",
-      icon: Building2,
-      color: "text-cyan-500",
-      border: "border-l-cyan-500",
-    },
   ];
 
   return (
@@ -139,7 +131,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Stat Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         {statCards.map((card, i) => (
           <motion.div
             key={card.title}
