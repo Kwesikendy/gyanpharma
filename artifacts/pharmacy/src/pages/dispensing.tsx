@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMedicines, getDispensingRecords, addDispensingRecord, Medicine, DispensingRecord, isExpired } from "@/lib/firestore";
+import { subscribeToMedicines, subscribeToDispensingRecords, addDispensingRecord, Medicine, DispensingRecord, isExpired } from "@/lib/firestore";
 import { exportDispensingToCsv } from "@/lib/exportUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -84,18 +84,32 @@ export default function Dispensing() {
     }
   }, [watchMedicineId, medicines]);
 
-  const fetchData = async () => {
+  useEffect(() => {
     setLoadingData(true);
-    try {
-      const [meds, recs] = await Promise.all([getMedicines(), getDispensingRecords()]);
-      setMedicines(meds.filter((m) => m.status === "active"));
-      setRecords(recs.slice(0, 30));
-    } finally {
-      setLoadingData(false);
-    }
-  };
+    let medsLoaded = false;
+    let recordsLoaded = false;
+    
+    const checkLoaded = () => {
+      if (medsLoaded && recordsLoaded) setLoadingData(false);
+    };
 
-  useEffect(() => { fetchData(); }, []);
+    const unsubMeds = subscribeToMedicines((meds) => {
+      setMedicines(meds.filter((m) => m.status === "active"));
+      medsLoaded = true;
+      checkLoaded();
+    });
+
+    const unsubRecords = subscribeToDispensingRecords((recs) => {
+      setRecords(recs.slice(0, 30));
+      recordsLoaded = true;
+      checkLoaded();
+    });
+
+    return () => {
+      unsubMeds();
+      unsubRecords();
+    };
+  }, []);
 
   const remainingAfterDispense = selectedMedicine
     ? selectedMedicine.quantity - (watchQty || 0)
@@ -104,36 +118,36 @@ export default function Dispensing() {
   const unitPrice = selectedMedicine?.price || 0;
   const totalPrice = unitPrice * (watchQty || 0);
 
-  async function onSubmit(data: DispensingFormValues) {
+  function onSubmit(data: DispensingFormValues) {
     const medicine = medicines.find((m) => m.id === data.medicineId);
     if (!medicine) return;
 
     setSubmitting(true);
-    try {
-      await addDispensingRecord({
-        ...data,
-        medicineName: medicine.name,
-        dispensedBy: userProfile?.uid || "",
-        dispensedByName: userProfile?.displayName || userProfile?.email || "Unknown",
-      });
-      toast({
-        title: "Dispensing recorded",
-        description: `${data.quantityDispensed} ${medicine.unit} of ${medicine.name} dispensed.`,
-      });
-      form.reset({
-        medicineId: "",
-        quantityDispensed: 1,
-        patientName: "",
-        date: new Date().toISOString().split("T")[0],
-        notes: "",
-      });
-      setSelectedMedicine(null);
-      fetchData();
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to record dispensing.", variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
+    
+    addDispensingRecord({
+      ...data,
+      medicineName: medicine.name,
+      dispensedBy: userProfile?.uid || "",
+      dispensedByName: userProfile?.displayName || userProfile?.email || "Unknown",
+    }).catch((err: any) => {
+      toast({ title: "Sync Error", description: err.message || "Failed to sync dispensing.", variant: "destructive" });
+    });
+
+    toast({
+      title: "Dispensing recorded",
+      description: `${data.quantityDispensed} ${medicine.unit} of ${medicine.name} dispensed (syncing in background).`,
+    });
+    
+    form.reset({
+      medicineId: "",
+      quantityDispensed: 1,
+      patientName: "",
+      date: new Date().toISOString().split("T")[0],
+      notes: "",
+    });
+    
+    setSelectedMedicine(null);
+    setSubmitting(false);
   }
 
   return (

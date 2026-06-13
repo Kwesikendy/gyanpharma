@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import {
-  getMedicines, deleteMedicine, addMedicine, updateMedicine,
+  subscribeToMedicines, deleteMedicine, addMedicine, updateMedicine,
   Medicine, MedicineInput,
   getLowStockMedicines, isExpired, isExpiringSoon,
 } from "@/lib/firestore";
@@ -32,17 +32,14 @@ export default function Inventory() {
   const { isAdmin } = useAuth();
   const { toast } = useToast();
 
-  const fetchAll = async () => {
+  useEffect(() => {
     setLoading(true);
-    try {
-      const meds = await getMedicines();
+    const unsubscribe = subscribeToMedicines((meds) => {
       setMedicines(meds);
-    } finally {
       setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchAll(); }, []);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const categories = Array.from(new Set(medicines.map((m) => m.category))).sort();
 
@@ -69,33 +66,32 @@ export default function Inventory() {
     setDialogOpen(true);
   }
 
-  async function handleSave(data: MedicineInput) {
+  function handleSave(data: MedicineInput) {
     setSubmitting(true);
-    try {
-      if (editingMedicine) {
-        await updateMedicine(editingMedicine.id, data);
-        toast({ title: "Medicine updated", description: `${data.name} has been updated.` });
-      } else {
-        await addMedicine(data);
-        toast({ title: "Medicine added", description: `${data.name} added to inventory.` });
-      }
-      setDialogOpen(false);
-      fetchAll();
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to save.", variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
+    
+    // Optimistic background sync
+    const action = editingMedicine 
+      ? updateMedicine(editingMedicine.id, data)
+      : addMedicine(data);
+      
+    action.catch((err: any) => {
+      toast({ title: "Sync Error", description: err.message || "Failed to sync to server.", variant: "destructive" });
+    });
+
+    toast({ 
+      title: editingMedicine ? "Medicine updated" : "Medicine added", 
+      description: `${data.name} saved (syncing in background).` 
+    });
+    
+    setDialogOpen(false);
+    setSubmitting(false);
   }
 
-  async function handleDelete(id: string, name: string) {
-    try {
-      await deleteMedicine(id);
-      toast({ title: "Deleted", description: `${name} removed from inventory.` });
-      fetchAll();
-    } catch (err) {
-      toast({ title: "Error", description: "Could not delete medicine.", variant: "destructive" });
-    }
+  function handleDelete(id: string, name: string) {
+    deleteMedicine(id).catch(() => {
+      toast({ title: "Sync Error", description: "Could not sync deletion.", variant: "destructive" });
+    });
+    toast({ title: "Deleted", description: `${name} removed from inventory.` });
   }
 
   return (

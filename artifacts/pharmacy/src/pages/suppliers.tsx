@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getSuppliers, addSupplier, updateSupplier, deleteSupplier, Supplier, SupplierInput } from "@/lib/firestore";
+import { subscribeToSuppliers, addSupplier, updateSupplier, deleteSupplier, Supplier, SupplierInput } from "@/lib/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -41,12 +41,14 @@ export default function Suppliers() {
     defaultValues: { name: "", contactPerson: "", phone: "", email: "", address: "", notes: "" },
   });
 
-  const fetchSuppliers = () => {
+  useEffect(() => {
     setLoading(true);
-    getSuppliers().then(setSuppliers).finally(() => setLoading(false));
-  };
-
-  useEffect(() => { fetchSuppliers(); }, []);
+    const unsubscribe = subscribeToSuppliers((data) => {
+      setSuppliers(data);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   function openAdd() {
     setEditingSupplier(null);
@@ -67,33 +69,31 @@ export default function Suppliers() {
     setDialogOpen(true);
   }
 
-  async function onSubmit(data: SupplierFormValues) {
+  function onSubmit(data: SupplierFormValues) {
     setSubmitting(true);
-    try {
-      if (editingSupplier) {
-        await updateSupplier(editingSupplier.id, data as SupplierInput);
-        toast({ title: "Supplier updated", description: `${data.name} has been updated.` });
-      } else {
-        await addSupplier(data as SupplierInput);
-        toast({ title: "Supplier added", description: `${data.name} added to the directory.` });
-      }
-      setDialogOpen(false);
-      fetchSuppliers();
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to save supplier.", variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
+    
+    const action = editingSupplier
+      ? updateSupplier(editingSupplier.id, data as SupplierInput)
+      : addSupplier(data as SupplierInput);
+      
+    action.catch((err: any) => {
+      toast({ title: "Sync Error", description: err.message || "Failed to sync supplier.", variant: "destructive" });
+    });
+
+    toast({ 
+      title: editingSupplier ? "Supplier updated" : "Supplier added", 
+      description: `${data.name} saved (syncing in background).` 
+    });
+    
+    setDialogOpen(false);
+    setSubmitting(false);
   }
 
-  async function handleDelete(supplier: Supplier) {
-    try {
-      await deleteSupplier(supplier.id);
-      toast({ title: "Supplier removed", description: `${supplier.name} has been removed.` });
-      fetchSuppliers();
-    } catch (err: any) {
-      toast({ title: "Error", description: "Failed to delete supplier.", variant: "destructive" });
-    }
+  function handleDelete(supplier: Supplier) {
+    deleteSupplier(supplier.id).catch((err: any) => {
+      toast({ title: "Sync Error", description: "Failed to sync supplier deletion.", variant: "destructive" });
+    });
+    toast({ title: "Supplier removed", description: `${supplier.name} has been removed.` });
   }
 
   return (

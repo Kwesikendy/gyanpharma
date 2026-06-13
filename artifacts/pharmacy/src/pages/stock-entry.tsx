@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMedicines, getStockEntries, addStockEntry, Medicine, StockEntry as StockEntryType } from "@/lib/firestore";
+import { subscribeToMedicines, subscribeToStockEntries, addStockEntry, Medicine, StockEntry as StockEntryType } from "@/lib/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -70,47 +70,61 @@ export default function StockEntry() {
     },
   });
 
-  const fetchData = async () => {
+  useEffect(() => {
     setLoadingData(true);
-    try {
-      const [meds, ents] = await Promise.all([getMedicines(), getStockEntries()]);
+    let medsLoaded = false;
+    let entriesLoaded = false;
+    
+    const checkLoaded = () => {
+      if (medsLoaded && entriesLoaded) setLoadingData(false);
+    };
+
+    const unsubMeds = subscribeToMedicines((meds) => {
       setMedicines(meds);
+      medsLoaded = true;
+      checkLoaded();
+    });
+
+    const unsubEntries = subscribeToStockEntries((ents) => {
       setEntries(ents.slice(0, 20));
-    } finally {
-      setLoadingData(false);
-    }
-  };
+      entriesLoaded = true;
+      checkLoaded();
+    });
 
-  useEffect(() => { fetchData(); }, []);
+    return () => {
+      unsubMeds();
+      unsubEntries();
+    };
+  }, []);
 
-  async function onSubmit(data: StockEntryFormValues) {
+  function onSubmit(data: StockEntryFormValues) {
     const medicine = medicines.find((m) => m.id === data.medicineId);
     if (!medicine) return;
 
     setSubmitting(true);
-    try {
-      await addStockEntry({
-        ...data,
-        medicineName: medicine.name,
-        supplierId: "",
-        supplierName: "",
-        createdBy: userProfile?.displayName || userProfile?.email || "Unknown",
-      });
-      toast({ title: "Stock entry logged", description: `Added ${data.quantityReceived} units of ${medicine.name}.` });
-      form.reset({
-        medicineId: "",
-        quantityReceived: 0,
-        batchNumber: "",
-        expiryDate: "",
-        dateReceived: new Date().toISOString().split("T")[0],
-        notes: "",
-      });
-      fetchData();
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to log stock entry.", variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
+    
+    addStockEntry({
+      ...data,
+      medicineName: medicine.name,
+      supplierId: "",
+      supplierName: "",
+      createdBy: userProfile?.displayName || userProfile?.email || "Unknown",
+    }).catch((err: any) => {
+      toast({ title: "Sync Error", description: err.message || "Failed to sync stock entry.", variant: "destructive" });
+    });
+    
+    toast({ title: "Stock entry logged", description: `Added ${data.quantityReceived} units of ${medicine.name} (syncing in background).` });
+    
+    form.reset({
+      medicineId: "",
+      quantityReceived: 0,
+      batchNumber: "",
+      expiryDate: "",
+      dateReceived: new Date().toISOString().split("T")[0],
+      notes: "",
+    });
+    
+    setSubmitting(false);
   }
 
   return (

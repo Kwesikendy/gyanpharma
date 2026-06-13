@@ -13,6 +13,7 @@ import {
   Timestamp,
   writeBatch,
   limit,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -185,6 +186,22 @@ export async function getMedicines(): Promise<Medicine[]> {
   });
 }
 
+export function subscribeToMedicines(callback: (medicines: Medicine[]) => void): () => void {
+  const q = query(collection(db, "medicines"), orderBy("name"));
+  return onSnapshot(q, (snap) => {
+    const meds = snap.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        ...data,
+        createdAt: toDate(data.createdAt),
+        updatedAt: toDate(data.updatedAt),
+      } as Medicine;
+    });
+    callback(meds);
+  });
+}
+
 export async function getMedicine(id: string): Promise<Medicine | null> {
   const snap = await getDoc(doc(db, "medicines", id));
   if (!snap.exists()) return null;
@@ -219,6 +236,17 @@ export async function getStockEntries(): Promise<StockEntry[]> {
   });
 }
 
+export function subscribeToStockEntries(callback: (entries: StockEntry[]) => void): () => void {
+  const q = query(collection(db, "stockEntries"), orderBy("createdAt", "desc"));
+  return onSnapshot(q, (snap) => {
+    const entries = snap.docs.map((d) => {
+      const data = d.data();
+      return { id: d.id, ...data, createdAt: toDate(data.createdAt) } as StockEntry;
+    });
+    callback(entries);
+  });
+}
+
 export async function addStockEntry(input: StockEntryInput): Promise<string> {
   const batch = writeBatch(db);
   const entryRef = doc(collection(db, "stockEntries"));
@@ -247,6 +275,17 @@ export async function getDispensingRecords(): Promise<DispensingRecord[]> {
   return snap.docs.map((d) => {
     const data = d.data();
     return { id: d.id, ...data, createdAt: toDate(data.createdAt) } as DispensingRecord;
+  });
+}
+
+export function subscribeToDispensingRecords(callback: (records: DispensingRecord[]) => void): () => void {
+  const q = query(collection(db, "dispensingRecords"), orderBy("createdAt", "desc"));
+  return onSnapshot(q, (snap) => {
+    const records = snap.docs.map((d) => {
+      const data = d.data();
+      return { id: d.id, ...data, createdAt: toDate(data.createdAt) } as DispensingRecord;
+    });
+    callback(records);
   });
 }
 
@@ -283,6 +322,17 @@ export async function getSuppliers(): Promise<Supplier[]> {
   return snap.docs.map((d) => {
     const data = d.data();
     return { id: d.id, ...data, createdAt: toDate(data.createdAt) } as Supplier;
+  });
+}
+
+export function subscribeToSuppliers(callback: (suppliers: Supplier[]) => void): () => void {
+  const q = query(collection(db, "suppliers"), orderBy("name"));
+  return onSnapshot(q, (snap) => {
+    const suppliers = snap.docs.map((d) => {
+      const data = d.data();
+      return { id: d.id, ...data, createdAt: toDate(data.createdAt) } as Supplier;
+    });
+    callback(suppliers);
   });
 }
 
