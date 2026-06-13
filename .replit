@@ -26,3 +26,18 @@ externalPort = 8080
 [[ports]]
 localPort = 8081
 externalPort = 80
+
+[[ports]]
+localPort = 22873
+externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+VITE_FIREBASE_API_KEY = "AIzaSyB9wpoLI8rGqO82-X1IMCyr4cAIC61XjmU"
+VITE_FIREBASE_AUTH_DOMAIN = "gyanchemicalstore.firebaseapp.com"
+VITE_FIREBASE_PROJECT_ID = "gyanchemicalstore"
+VITE_FIREBASE_STORAGE_BUCKET = "gyanchemicalstore.firebasestorage.app"
+VITE_FIREBASE_MESSAGING_SENDER_ID = "1072187050441"
+VITE_FIREBASE_APP_ID = "1:1072187050441:web:4d3fdbb3b528251d1e8018"
+VITE_FIREBASE_MEASUREMENT_ID = "G-CX251Q00Q6"
