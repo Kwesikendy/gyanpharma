@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "buildCommand": "pnpm --filter @workspace/pharmacy build",
   "outputDirectory": "artifacts/pharmacy/dist",
   "installCommand": "pnpm install --no-frozen-lockfile",
