@@ -195,7 +195,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {isOnline ? "Connected" : "Offline — cached data"}
               </span>
             </div>
-            <span className="text-[10px] text-sidebar-foreground/30 font-mono select-none">v1.0.0</span>
+            <span className="text-xs text-sidebar-foreground/50 font-mono select-none font-semibold">v1.0.0</span>
           </div>
 
           <div className="flex items-center gap-3 mb-4">
@@ -287,6 +287,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               {children}
             </motion.div>
+          </div>
+          {/* Version footer */}
+          <div className="mx-auto max-w-7xl pt-4 pb-2 flex items-center justify-end">
+            <span className="text-xs text-muted-foreground/50 font-mono select-none">Gyan Chemicals Pharmacy · v1.0.0</span>
           </div>
         </main>
       </div>
