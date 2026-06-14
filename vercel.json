@@ -1,0 +1,9 @@
+{
+  "buildCommand": "pnpm --filter @workspace/pharmacy build",
+  "outputDirectory": "artifacts/pharmacy/dist",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
