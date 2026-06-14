@@ -13,19 +13,14 @@ if (!rawPort) {
   );
 }
 
-const port = Number(rawPort);
+const port = Number(rawPort) || 5000;
 
 if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
+  // fallback silently for build environments like Vercel
 }
 
 const basePath = process.env.BASE_PATH || "/";
 
-if (!basePath) {
-  throw new Error(
-    "BASE_PATH environment variable is required but was not provided.",
-  );
-}
 
 const normalizedBase = basePath.endsWith("/") ? basePath : basePath + "/";
 
