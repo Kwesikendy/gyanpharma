@@ -184,15 +184,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
           transition={{ delay: 0.4 }}
         >
           {/* Connectivity indicator */}
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <motion.div
-              className={`h-2 w-2 rounded-full ${isOnline ? "bg-emerald-400" : "bg-amber-400"}`}
-              animate={isOnline ? { scale: [1, 1.3, 1] } : { opacity: [1, 0.4, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <span className="text-xs text-sidebar-foreground/60">
-              {isOnline ? "Connected" : "Offline — cached data"}
-            </span>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="flex items-center gap-2">
+              <motion.div
+                className={`h-2 w-2 rounded-full ${isOnline ? "bg-emerald-400" : "bg-amber-400"}`}
+                animate={isOnline ? { scale: [1, 1.3, 1] } : { opacity: [1, 0.4, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <span className="text-xs text-sidebar-foreground/60">
+                {isOnline ? "Connected" : "Offline — cached data"}
+              </span>
+            </div>
+            <span className="text-[10px] text-sidebar-foreground/30 font-mono select-none">v1.0.0</span>
           </div>
 
           <div className="flex items-center gap-3 mb-4">

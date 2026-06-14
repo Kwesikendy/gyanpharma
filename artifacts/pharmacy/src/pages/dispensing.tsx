@@ -127,6 +127,8 @@ export default function Dispensing() {
     addDispensingRecord({
       ...data,
       medicineName: medicine.name,
+      unitPrice,
+      totalPrice,
       dispensedBy: userProfile?.uid || "",
       dispensedByName: userProfile?.displayName || userProfile?.email || "Unknown",
     }).catch((err: any) => {

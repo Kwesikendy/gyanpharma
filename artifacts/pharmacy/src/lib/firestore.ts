@@ -14,6 +14,7 @@ import {
   writeBatch,
   limit,
   onSnapshot,
+  increment,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -252,18 +253,14 @@ export async function addStockEntry(input: StockEntryInput): Promise<string> {
   const entryRef = doc(collection(db, "stockEntries"));
   batch.set(entryRef, { ...input, createdAt: serverTimestamp() });
   const medicineRef = doc(db, "medicines", input.medicineId);
-  const medicineSnap = await getDoc(medicineRef);
-  if (medicineSnap.exists()) {
-    const current = medicineSnap.data().quantity || 0;
-    batch.update(medicineRef, {
-      quantity: current + input.quantityReceived,
-      expiryDate: input.expiryDate,
-      batchNumber: input.batchNumber,
-      supplierName: input.supplierName,
-      supplierId: input.supplierId,
-      updatedAt: serverTimestamp(),
-    });
-  }
+  batch.update(medicineRef, {
+    quantity: increment(input.quantityReceived),
+    expiryDate: input.expiryDate,
+    batchNumber: input.batchNumber,
+    supplierName: input.supplierName,
+    supplierId: input.supplierId,
+    updatedAt: serverTimestamp(),
+  });
   await batch.commit();
   return entryRef.id;
 }
@@ -290,27 +287,21 @@ export function subscribeToDispensingRecords(callback: (records: DispensingRecor
 }
 
 export async function addDispensingRecord(input: DispensingInput): Promise<string> {
-  const medicineSnap = await getDoc(doc(db, "medicines", input.medicineId));
-  if (!medicineSnap.exists()) throw new Error("Medicine not found");
-  const medicine = medicineSnap.data();
-  const currentQty = medicine.quantity || 0;
-  if (currentQty < input.quantityDispensed) {
-    throw new Error(`Insufficient stock. Available: ${currentQty}`);
-  }
-  if (isExpired(medicine.expiryDate)) {
-    throw new Error("Warning: This medicine has expired. Dispensing not allowed.");
-  }
-  
-  const unitPrice = medicine.price || 0;
-  const totalPrice = unitPrice * input.quantityDispensed;
-
   const batch = writeBatch(db);
   const recordRef = doc(collection(db, "dispensingRecords"));
-  batch.set(recordRef, { ...input, unitPrice, totalPrice, createdAt: serverTimestamp() });
+  
+  batch.set(recordRef, { 
+    ...input, 
+    unitPrice: input.unitPrice || 0, 
+    totalPrice: input.totalPrice || 0, 
+    createdAt: serverTimestamp() 
+  });
+  
   batch.update(doc(db, "medicines", input.medicineId), {
-    quantity: currentQty - input.quantityDispensed,
+    quantity: increment(-input.quantityDispensed),
     updatedAt: serverTimestamp(),
   });
+  
   await batch.commit();
   return recordRef.id;
 }
