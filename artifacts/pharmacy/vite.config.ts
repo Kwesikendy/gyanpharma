@@ -32,7 +32,7 @@ export default defineConfig({
     runtimeErrorOverlay(),
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: "auto",
+      injectRegister: "inline",
       includeAssets: [
         "favicon.svg",
         "apple-touch-icon.svg",
