@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, UserPlus, Loader2, ShieldCheck, User } from "lucide-react";
+import { Users, UserPlus, Loader2, ShieldCheck, User, Mail } from "lucide-react";
 import { format } from "date-fns";
 
 const newUserSchema = z.object({
@@ -27,7 +27,7 @@ const newUserSchema = z.object({
 type NewUserFormValues = z.infer<typeof newUserSchema>;
 
 export default function UsersPage() {
-  const { createUser } = useAuth();
+  const { createUser, sendResetEmail } = useAuth();
   const { toast } = useToast();
   const [users, setUsers] = useState<PharmacyUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +45,15 @@ export default function UsersPage() {
   };
 
   useEffect(() => { fetchUsers(); }, []);
+
+  const handleResetPassword = async (email: string) => {
+    try {
+      await sendResetEmail(email);
+      toast({ title: "Email Sent", description: `A password reset link has been sent to ${email}.` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to send reset email.", variant: "destructive" });
+    }
+  };
 
   async function onSubmit(data: NewUserFormValues) {
     setSubmitting(true);
@@ -83,6 +92,7 @@ export default function UsersPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -96,7 +106,7 @@ export default function UsersPage() {
                   ))
                 ) : users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">No users found.</TableCell>
+                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">No users found.</TableCell>
                   </TableRow>
                 ) : (
                   users.map((user) => (
@@ -121,6 +131,11 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {user.createdAt ? format(user.createdAt, "MMM d, yyyy") : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm" onClick={() => handleResetPassword(user.email)}>
+                          <Mail className="mr-2 h-3 w-3" /> Reset Password
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

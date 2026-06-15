@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import {
   Settings,
   User,
@@ -36,6 +38,28 @@ export default function SettingsPage() {
     () => localStorage.getItem("gyanchem_last_backup")
   );
   const [errorMsg, setErrorMsg] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const { toast } = useToast();
+  const { updateUserPassword } = useAuth();
+
+  async function handleUpdatePassword() {
+    if (!newPassword || newPassword.length < 6) return;
+    setUpdatingPassword(true);
+    try {
+      await updateUserPassword(newPassword);
+      toast({ title: "Password Updated", description: "Your password has been changed successfully." });
+      setNewPassword("");
+    } catch (err: any) {
+      if (err.code === "auth/requires-recent-login") {
+        toast({ title: "Security Requirement", description: "Please log out and log back in before changing your password.", variant: "destructive" });
+      } else {
+        toast({ title: "Update Failed", description: err.message || "Failed to update password.", variant: "destructive" });
+      }
+    } finally {
+      setUpdatingPassword(false);
+    }
+  }
 
   async function handleExport() {
     if (!userProfile?.email) return;
@@ -141,6 +165,33 @@ export default function SettingsPage() {
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Security (Change Password) ── */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              Security
+            </CardTitle>
+            <CardDescription>Update your personal password</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <label htmlFor="new-password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">New Password</label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Min. 6 characters"
+              />
+            </div>
+            <Button onClick={handleUpdatePassword} disabled={!newPassword || newPassword.length < 6 || updatingPassword}>
+              {updatingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Update Password
+            </Button>
           </CardContent>
         </Card>
 
