@@ -32,12 +32,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/inventory", label: "Inventory", icon: Package },
-    { href: "/stock-entry", label: "Stock Entry", icon: ArrowDownToLine },
+    ...(userProfile?.role !== "sales" ? [{ href: "/inventory", label: "Inventory", icon: Package }] : []),
+    ...(userProfile?.role !== "sales" ? [{ href: "/stock-entry", label: "Stock Entry", icon: ArrowDownToLine }] : []),
     { href: "/dispensing", label: "Dispensing", icon: Pill },
-    { href: "/reports", label: "Reports", icon: FileText },
+    ...(userProfile?.role !== "sales" ? [{ href: "/reports", label: "Reports", icon: FileText }] : []),
     ...(isAdmin ? [{ href: "/users", label: "Users", icon: Users }] : []),
-    { href: "/settings", label: "Settings", icon: Settings },
+    ...(userProfile?.role !== "sales" ? [{ href: "/settings", label: "Settings", icon: Settings }] : []),
   ];
 
   return (

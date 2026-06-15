@@ -9,7 +9,7 @@ import {
 import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 
-export type UserRole = "admin" | "pharmacist";
+export type UserRole = "admin" | "pharmacist" | "sales";
 
 export interface UserProfile {
   uid: string;

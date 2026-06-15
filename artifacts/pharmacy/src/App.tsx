@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AdminRoute } from "@/components/auth/AdminRoute";
+import { PharmacistRoute } from "@/components/auth/PharmacistRoute";
 import { Layout } from "@/components/layout/Layout";
 
 import Login from "@/pages/login";
@@ -30,22 +31,22 @@ function Router() {
         <ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>
       </Route>
       <Route path="/inventory">
-        <ProtectedRoute><Layout><Inventory /></Layout></ProtectedRoute>
+        <PharmacistRoute><Layout><Inventory /></Layout></PharmacistRoute>
       </Route>
       <Route path="/stock-entry">
-        <ProtectedRoute><Layout><StockEntry /></Layout></ProtectedRoute>
+        <PharmacistRoute><Layout><StockEntry /></Layout></PharmacistRoute>
       </Route>
       <Route path="/dispensing">
         <ProtectedRoute><Layout><Dispensing /></Layout></ProtectedRoute>
       </Route>
       <Route path="/reports">
-        <ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>
+        <PharmacistRoute><Layout><Reports /></Layout></PharmacistRoute>
       </Route>
       <Route path="/users">
         <AdminRoute><Layout><UsersPage /></Layout></AdminRoute>
       </Route>
       <Route path="/settings">
-        <ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>
+        <PharmacistRoute><Layout><SettingsPage /></Layout></PharmacistRoute>
       </Route>
 
       <Route path="/">

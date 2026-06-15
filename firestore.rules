@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Common Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Note: To avoid recursion and extra reads, it's highly recommended
+    // to use Custom Claims for roles. Since we use a users collection:
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserRole() == 'admin';
+    }
+
+    function isPharmacist() {
+      return isSignedIn() && (getUserRole() == 'pharmacist' || getUserRole() == 'admin');
+    }
+
+    function isSales() {
+      return isSignedIn() && (getUserRole() == 'sales' || getUserRole() == 'pharmacist' || getUserRole() == 'admin');
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Medicines Collection (Inventory)
+    match /medicines/{medicineId} {
+      // Sales needs to read medicines to dispense, and update quantity
+      allow read: if isSales();
+      allow create, delete: if isPharmacist();
+      allow update: if isSales();
+    }
+
+    // Stock Entries (Adding stock)
+    match /stock_entries/{entryId} {
+      allow read, write: if isPharmacist();
+    }
+
+    // Dispensing Records (Sales)
+    match /dispensing_records/{recordId} {
+      // Sales can read their own or create new. Admin can read all.
+      // For simplicity, letting sales read/write all dispensing.
+      allow read, write: if isSales();
+    }
+    
+    // Suppliers
+    match /suppliers/{supplierId} {
+      allow read, write: if isPharmacist();
+    }
+  }
+}

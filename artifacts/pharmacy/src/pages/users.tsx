@@ -21,7 +21,7 @@ const newUserSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   displayName: z.string().min(1, "Display name is required"),
-  role: z.enum(["admin", "pharmacist"]),
+  role: z.enum(["admin", "pharmacist", "sales"]),
 });
 
 type NewUserFormValues = z.infer<typeof newUserSchema>;
@@ -171,6 +171,7 @@ export default function UsersPage() {
                     <SelectContent>
                       <SelectItem value="pharmacist">Pharmacist</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="sales">Sales</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
