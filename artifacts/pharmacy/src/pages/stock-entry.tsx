@@ -10,12 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, PackagePlus, History, ArrowDownToLine, Box } from "lucide-react";
+import { Loader2, PackagePlus, History, ArrowDownToLine, Box, ChevronsUpDown, Check } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -57,6 +59,7 @@ export default function StockEntry() {
   const [entries, setEntries] = useState<StockEntryType[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [medicineOpen, setMedicineOpen] = useState(false);
 
   const form = useForm<StockEntryFormValues>({
     resolver: zodResolver(stockEntrySchema),
@@ -166,20 +169,56 @@ export default function StockEntry() {
                   control={form.control}
                   name="medicineId"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Medicine</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-medicine">
-                            <SelectValue placeholder="Select medicine..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {medicines.map((m) => (
-                            <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover open={medicineOpen} onOpenChange={setMedicineOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              data-testid="select-medicine"
+                              className={cn(
+                                "w-full justify-between font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? medicines.find((m) => m.id === field.value)?.name
+                                : "Search medicine..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Type to search medicines..." />
+                            <CommandList>
+                              <CommandEmpty>No medicine found.</CommandEmpty>
+                              <CommandGroup>
+                                {medicines.map((m) => (
+                                  <CommandItem
+                                    key={m.id}
+                                    value={m.name}
+                                    onSelect={() => {
+                                      field.onChange(m.id);
+                                      setMedicineOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === m.id ? "opacity-100 text-primary" : "opacity-0"
+                                      )}
+                                    />
+                                    {m.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}

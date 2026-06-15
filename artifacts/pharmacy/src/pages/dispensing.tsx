@@ -11,14 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Pill, Download, AlertTriangle, AlertCircle, History, Receipt, ArrowRight } from "lucide-react";
+import { Loader2, Pill, Download, AlertTriangle, AlertCircle, History, Receipt, ArrowRight, ChevronsUpDown, Check } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -60,6 +62,7 @@ export default function Dispensing() {
   const [loadingData, setLoadingData] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
+  const [medicineOpen, setMedicineOpen] = useState(false);
 
   const form = useForm<DispensingFormValues>({
     resolver: zodResolver(dispensingSchema),
@@ -198,25 +201,62 @@ export default function Dispensing() {
                   control={form.control}
                   name="medicineId"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Medicine</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-medicine">
-                            <SelectValue placeholder="Select medicine..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {medicines.map((m) => (
-                            <SelectItem key={m.id} value={m.id}>
-                              {m.name}
-                              {m.quantity <= m.lowStockThreshold && (
-                                <span className="ml-2 text-amber-500">(Low: {m.quantity})</span>
+                      <Popover open={medicineOpen} onOpenChange={setMedicineOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              data-testid="select-medicine"
+                              className={cn(
+                                "w-full justify-between font-normal",
+                                !field.value && "text-muted-foreground"
                               )}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            >
+                              {field.value
+                                ? medicines.find((m) => m.id === field.value)?.name
+                                : "Search medicine..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Type to search medicines..." />
+                            <CommandList>
+                              <CommandEmpty>No medicine found.</CommandEmpty>
+                              <CommandGroup>
+                                {medicines.map((m) => (
+                                  <CommandItem
+                                    key={m.id}
+                                    value={m.name}
+                                    onSelect={() => {
+                                      field.onChange(m.id);
+                                      setMedicineOpen(false);
+                                    }}
+                                    className="flex items-center justify-between"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Check
+                                        className={cn(
+                                          "h-4 w-4",
+                                          field.value === m.id ? "opacity-100 text-primary" : "opacity-0"
+                                        )}
+                                      />
+                                      <span>{m.name}</span>
+                                    </div>
+                                    {m.quantity <= m.lowStockThreshold && (
+                                      <span className="text-xs text-amber-500 font-medium">Low: {m.quantity}</span>
+                                    )}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}

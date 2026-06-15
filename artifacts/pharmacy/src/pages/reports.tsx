@@ -56,6 +56,20 @@ export default function Reports() {
 
   const totalRevenue = filteredDispensing.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
 
+  // Aggregate daily sales by staff
+  const dailyStaffSalesMap = new Map<string, { date: string; staffId: string; staffName: string; revenue: number; itemsSold: number }>();
+  filteredDispensing.forEach((r) => {
+    if (!r.date) return;
+    const key = `${r.date}_${r.dispensedBy}`;
+    if (!dailyStaffSalesMap.has(key)) {
+      dailyStaffSalesMap.set(key, { date: r.date, staffId: r.dispensedBy, staffName: r.dispensedByName || "Unknown", revenue: 0, itemsSold: 0 });
+    }
+    const stat = dailyStaffSalesMap.get(key)!;
+    stat.revenue += (r.totalPrice || 0);
+    stat.itemsSold += (r.quantityDispensed || 0);
+  });
+  const dailySalesList = Array.from(dailyStaffSalesMap.values()).sort((a, b) => b.date.localeCompare(a.date));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -82,8 +96,9 @@ export default function Reports() {
       </Card>
 
       <Tabs defaultValue="dispensing">
-        <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+        <TabsList className="grid w-full max-w-[550px] grid-cols-3">
           <TabsTrigger value="dispensing">Dispensing History</TabsTrigger>
+          <TabsTrigger value="daily">Daily Sales Summary</TabsTrigger>
           <TabsTrigger value="stock">Stock Entries</TabsTrigger>
         </TabsList>
 
@@ -157,6 +172,63 @@ export default function Reports() {
                           <TableCell>{r.dispensedByName}</TableCell>
                           <TableCell>{r.date ? format(new Date(r.date), "MMM d, yyyy") : "-"}</TableCell>
                           <TableCell className="text-muted-foreground text-xs max-w-[180px] truncate">{r.notes || "-"}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="daily" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Daily Sales Performance</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Staff Member</TableHead>
+                      <TableHead>Items Sold</TableHead>
+                      <TableHead>Total Revenue</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      Array(3).fill(0).map((_, i) => (
+                        <TableRow key={i}>
+                          {Array(4).fill(0).map((_, j) => (
+                            <TableCell key={j}><Skeleton className="h-4 w-[100px]" /></TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : dailySalesList.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">No sales data available for this range.</TableCell>
+                      </TableRow>
+                    ) : (
+                      dailySalesList.map((stat) => (
+                        <TableRow key={`${stat.date}_${stat.staffId}`}>
+                          <TableCell className="font-medium">{format(new Date(stat.date), "MMM d, yyyy")}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-xs">
+                                {stat.staffName.charAt(0).toUpperCase()}
+                              </div>
+                              <span>{stat.staffName}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-blue-600 border-blue-200">{stat.itemsSold}</Badge>
+                          </TableCell>
+                          <TableCell className="font-bold text-emerald-600">
+                            GH₵{stat.revenue.toFixed(2)}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}

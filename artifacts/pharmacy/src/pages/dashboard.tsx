@@ -81,10 +81,10 @@ export default function Dashboard() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    getDashboardStats().then(setStats).finally(() => setLoading(false));
+    getDashboardStats(userProfile?.id).then(setStats).finally(() => setLoading(false));
     const tick = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(tick);
-  }, []);
+  }, [userProfile?.id]);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -143,8 +143,8 @@ export default function Dashboard() {
     },
     {
       title: "Today's Revenue",
-      value: stats.todayRevenue || 0,
-      sub: "Total sales today",
+      value: userProfile?.role === "sales" ? (stats.myTodayRevenue || 0) : (stats.todayRevenue || 0),
+      sub: userProfile?.role === "sales" ? "Your sales today" : "Total sales today",
       icon: DollarSign,
       gradient: "from-blue-500 to-indigo-600",
       glow: "shadow-blue-200",
@@ -155,8 +155,8 @@ export default function Dashboard() {
     },
     {
       title: "Items Sold Today",
-      value: stats.itemsSoldToday || 0,
-      sub: "Total units dispensed",
+      value: userProfile?.role === "sales" ? (stats.myItemsSoldToday || 0) : (stats.itemsSoldToday || 0),
+      sub: userProfile?.role === "sales" ? "Your units dispensed" : "Total units dispensed",
       icon: ShoppingCart,
       gradient: "from-purple-500 to-violet-600",
       glow: "shadow-purple-200",
@@ -336,6 +336,46 @@ export default function Dashboard() {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* ── Today's Sales by Staff (Admin/Pharmacist Only) ── */}
+      {userProfile?.role !== "sales" && stats.todaySalesByStaff && stats.todaySalesByStaff.length > 0 && (
+        <motion.div variants={slideUp}>
+          <Card className="overflow-hidden border shadow-md">
+            <div className="flex items-center px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+              <div className="flex items-center gap-2">
+                <motion.div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                  <DollarSign className="h-4 w-4 text-blue-600" />
+                </motion.div>
+                <div>
+                  <h2 className="font-semibold text-sm text-foreground">Today's Performance by Staff</h2>
+                  <p className="text-xs text-muted-foreground">{stats.todaySalesByStaff.length} staff members active today</p>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {stats.todaySalesByStaff.map((staff) => (
+                  <div key={staff.userId} className="flex items-center justify-between px-6 py-4 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                        {staff.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{staff.name}</p>
+                        <p className="text-xs text-muted-foreground">{staff.itemsSold} items sold</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-emerald-600">GH₵{staff.revenue.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">Revenue</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* ── Recent Activity ── */}
       <motion.div variants={slideUp}>

@@ -132,6 +132,13 @@ export interface SupplierInput {
   notes?: string;
 }
 
+export interface StaffSales {
+  userId: string;
+  name: string;
+  revenue: number;
+  itemsSold: number;
+}
+
 export interface DashboardStats {
   totalMedicines: number;
   lowStockCount: number;
@@ -140,6 +147,9 @@ export interface DashboardStats {
   totalSuppliers: number;
   todayRevenue: number;
   itemsSoldToday: number;
+  todaySalesByStaff: StaffSales[];
+  myTodayRevenue?: number;
+  myItemsSoldToday?: number;
   recentActivity: ActivityItem[];
 }
 
@@ -345,7 +355,7 @@ export async function deleteSupplier(id: string): Promise<void> {
 
 // ─── Dashboard Stats ──────────────────────────────────────────────────────────
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+export async function getDashboardStats(currentUserId?: string): Promise<DashboardStats> {
   const todayStr = new Date().toISOString().split("T")[0];
   
   const [medicines, suppliers, stockEntriesSnap, dispensingSnap, todayDispensingSnap] = await Promise.all([
@@ -396,12 +406,29 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
   let todayRevenue = 0;
   let itemsSoldToday = 0;
+  const staffSalesMap = new Map<string, StaffSales>();
   
   todayDispensingSnap.forEach((d) => {
     const data = d.data();
-    todayRevenue += (data.totalPrice || 0);
-    itemsSoldToday += (data.quantityDispensed || 0);
+    const price = data.totalPrice || 0;
+    const qty = data.quantityDispensed || 0;
+    
+    todayRevenue += price;
+    itemsSoldToday += qty;
+    
+    const uId = data.dispensedBy;
+    if (uId) {
+      if (!staffSalesMap.has(uId)) {
+        staffSalesMap.set(uId, { userId: uId, name: data.dispensedByName || "Unknown", revenue: 0, itemsSold: 0 });
+      }
+      const staff = staffSalesMap.get(uId)!;
+      staff.revenue += price;
+      staff.itemsSold += qty;
+    }
   });
+
+  const todaySalesByStaff = Array.from(staffSalesMap.values()).sort((a, b) => b.revenue - a.revenue);
+  const myStats = currentUserId ? staffSalesMap.get(currentUserId) : undefined;
 
   return {
     totalMedicines: medicines.length,
@@ -411,6 +438,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     totalSuppliers: suppliers.length,
     todayRevenue,
     itemsSoldToday,
+    todaySalesByStaff,
+    myTodayRevenue: myStats?.revenue || 0,
+    myItemsSoldToday: myStats?.itemsSold || 0,
     recentActivity: recentActivity.slice(0, 8),
   };
 }
