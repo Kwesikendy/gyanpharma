@@ -39,9 +39,12 @@ export default function SettingsPage() {
   );
   const [errorMsg, setErrorMsg] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [newEmail, setNewEmail] = useState(userProfile?.email || "");
+  const [newName, setNewName] = useState(userProfile?.displayName || "");
   const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [updatingProfile, setUpdatingProfile] = useState(false);
   const { toast } = useToast();
-  const { updateUserPassword } = useAuth();
+  const { updateUserPassword, updateUserEmailAndName } = useAuth();
 
   async function handleUpdatePassword() {
     if (!newPassword || newPassword.length < 6) return;
@@ -58,6 +61,23 @@ export default function SettingsPage() {
       }
     } finally {
       setUpdatingPassword(false);
+    }
+  }
+
+  async function handleUpdateProfile() {
+    if (!newEmail || !newName) return;
+    setUpdatingProfile(true);
+    try {
+      await updateUserEmailAndName(newEmail, newName);
+      toast({ title: "Profile Updated", description: "Your email and name have been updated successfully." });
+    } catch (err: any) {
+      if (err.code === "auth/requires-recent-login") {
+        toast({ title: "Security Requirement", description: "Please log out and log back in before changing your email.", variant: "destructive" });
+      } else {
+        toast({ title: "Update Failed", description: err.message || "Failed to update profile.", variant: "destructive" });
+      }
+    } finally {
+      setUpdatingProfile(false);
     }
   }
 
@@ -168,17 +188,52 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* ── Security (Change Password) ── */}
+        {/* ── Security (Change Password & Profile) ── */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
-              Security
+              Security & Profile
             </CardTitle>
-            <CardDescription>Update your personal password</CardDescription>
+            <CardDescription>Update your personal information</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium border-b pb-2">Profile Details</h3>
+              <div className="grid gap-2">
+                <label htmlFor="new-name" className="text-sm font-medium leading-none">Full Name</label>
+                <Input
+                  id="new-name"
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Your display name"
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="new-email" className="text-sm font-medium leading-none">Email Address</label>
+                <Input
+                  id="new-email"
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="Your email address"
+                />
+              </div>
+              <Button 
+                onClick={handleUpdateProfile} 
+                disabled={!newEmail || !newName || updatingProfile || (newEmail === userProfile?.email && newName === userProfile?.displayName)}
+                variant="secondary"
+                className="w-full sm:w-auto"
+              >
+                {updatingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Update Profile
+              </Button>
+            </div>
+
+            <div className="space-y-4 pt-2">
+              <h3 className="text-sm font-medium border-b pb-2">Change Password</h3>
+              <div className="grid gap-2">
               <label htmlFor="new-password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">New Password</label>
               <Input
                 id="new-password"
@@ -188,10 +243,11 @@ export default function SettingsPage() {
                 placeholder="Min. 6 characters"
               />
             </div>
-            <Button onClick={handleUpdatePassword} disabled={!newPassword || newPassword.length < 6 || updatingPassword}>
+            <Button onClick={handleUpdatePassword} disabled={!newPassword || newPassword.length < 6 || updatingPassword} className="w-full sm:w-auto">
               {updatingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Update Password
             </Button>
+            </div>
           </CardContent>
         </Card>
 

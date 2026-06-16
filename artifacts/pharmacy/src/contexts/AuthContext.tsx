@@ -7,8 +7,10 @@ import {
   createUserWithEmailAndPassword,
   updatePassword,
   sendPasswordResetEmail,
+  updateEmail,
+  updateProfile,
 } from "firebase/auth";
-import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, onSnapshot, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db, firebaseConfig } from "@/lib/firebase";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
@@ -31,6 +33,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   createUser: (email: string, password: string, displayName: string, role: UserRole) => Promise<void>;
   updateUserPassword: (newPassword: string) => Promise<void>;
+  updateUserEmailAndName: (newEmail: string, newName: string) => Promise<void>;
   sendResetEmail: (email: string) => Promise<void>;
   isAdmin: boolean;
 }
@@ -174,12 +177,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await sendPasswordResetEmail(auth, email);
   }
 
+  async function updateUserEmailAndName(newEmail: string, newName: string) {
+    if (!currentUser) throw new Error("No user is logged in");
+    
+    // Update Firebase Auth profile
+    const promises: Promise<any>[] = [];
+    if (newEmail !== currentUser.email) {
+      promises.push(updateEmail(currentUser, newEmail));
+    }
+    if (newName !== currentUser.displayName) {
+      promises.push(updateProfile(currentUser, { displayName: newName }));
+    }
+    
+    await Promise.all(promises);
+
+    // Update Firestore user document
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      email: newEmail,
+      displayName: newName,
+    });
+  }
+
   // Only the specific admin email gets ultimate admin rights, as requested
-  const isAdmin = userProfile?.email === "admin@gyanchem.com";
+  const isAdmin = userProfile?.email === "gyankirchoff@gmail.com";
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, userProfile, loading, login, logout, createUser, updateUserPassword, sendResetEmail, isAdmin }}
+      value={{ currentUser, userProfile, loading, login, logout, createUser, updateUserPassword, updateUserEmailAndName, sendResetEmail, isAdmin }}
     >
       {children}
     </AuthContext.Provider>
