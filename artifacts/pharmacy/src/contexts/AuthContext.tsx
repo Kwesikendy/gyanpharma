@@ -9,7 +9,9 @@ import {
   sendPasswordResetEmail,
 } from "firebase/auth";
 import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth, db, firebaseConfig } from "@/lib/firebase";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
 export type UserRole = "admin" | "pharmacist" | "sales";
 
@@ -142,13 +144,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     displayName: string,
     role: UserRole
   ) {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db, "users", cred.user.uid), {
-      email,
-      displayName,
-      role,
-      createdAt: serverTimestamp(),
-    });
+    // We use a secondary Firebase app instance to create the user.
+    // This prevents the current Admin user from being automatically logged out
+    // by the createUserWithEmailAndPassword function.
+    const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+    const secondaryAuth = getAuth(secondaryApp);
+
+    try {
+      const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+      // Now the primary app is still signed in as the admin, so we can write to Firestore!
+      await setDoc(doc(db, "users", cred.user.uid), {
+        email,
+        displayName,
+        role,
+        createdAt: serverTimestamp(),
+      });
+    } finally {
+      // Clean up the secondary app session
+      await secondaryAuth.signOut();
+    }
   }
 
   async function updateUserPassword(newPassword: string) {
