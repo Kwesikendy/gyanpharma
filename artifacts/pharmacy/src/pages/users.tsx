@@ -151,7 +151,7 @@ export default function UsersPage() {
                           <Button variant="outline" size="sm" onClick={() => handleResetPassword(user.email)}>
                             <Mail className="mr-2 h-3 w-3" /> Reset Password
                           </Button>
-                          {user.email !== "admin@gyanchem.com" && (
+                          {user.email !== "gyankirchoff@gmail.com" && (
                             <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(user.id!, user.displayName)}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
