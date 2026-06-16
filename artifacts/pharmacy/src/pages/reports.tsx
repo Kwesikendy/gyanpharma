@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getDispensingRecords, getStockEntries, DispensingRecord, StockEntry } from "@/lib/firestore";
 import { exportDispensingToCsv, exportStockEntriesToCsv } from "@/lib/exportUtils";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { FileText, Download, Search } from "lucide-react";
 import { format } from "date-fns";
 
 export default function Reports() {
+  const { isAdmin } = useAuth();
   const { toast } = useToast();
   const [dispensingRecords, setDispensingRecords] = useState<DispensingRecord[]>([]);
   const [stockEntries, setStockEntries] = useState<StockEntry[]>([]);
@@ -98,7 +100,7 @@ export default function Reports() {
       <Tabs defaultValue="dispensing">
         <TabsList className="grid w-full max-w-[550px] grid-cols-3">
           <TabsTrigger value="dispensing">Dispensing History</TabsTrigger>
-          <TabsTrigger value="daily">Daily Sales Summary</TabsTrigger>
+          {isAdmin && <TabsTrigger value="daily">Daily Sales Summary</TabsTrigger>}
           <TabsTrigger value="stock">Stock Entries</TabsTrigger>
         </TabsList>
 
@@ -137,7 +139,7 @@ export default function Reports() {
                       <TableHead>Price</TableHead>
                       <TableHead>Total</TableHead>
                       <TableHead>Patient</TableHead>
-                      <TableHead>Dispensed By</TableHead>
+                      {isAdmin && <TableHead>Dispensed By</TableHead>}
                       <TableHead>Date</TableHead>
                       <TableHead>Notes</TableHead>
                     </TableRow>
@@ -146,14 +148,14 @@ export default function Reports() {
                     {loading ? (
                       Array(5).fill(0).map((_, i) => (
                         <TableRow key={i}>
-                          {Array(6).fill(0).map((_, j) => (
+                          {Array(isAdmin ? 8 : 7).fill(0).map((_, j) => (
                             <TableCell key={j}><Skeleton className="h-4 w-[80px]" /></TableCell>
                           ))}
                         </TableRow>
                       ))
                     ) : filteredDispensing.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">No dispensing records found.</TableCell>
+                        <TableCell colSpan={isAdmin ? 8 : 7} className="h-24 text-center text-muted-foreground">No dispensing records found.</TableCell>
                       </TableRow>
                     ) : (
                       filteredDispensing.map((r) => (
@@ -169,7 +171,7 @@ export default function Reports() {
                             {r.totalPrice ? `GH₵${r.totalPrice.toFixed(2)}` : "-"}
                           </TableCell>
                           <TableCell className="text-muted-foreground">{r.patientName || <span className="italic text-xs">Anonymous</span>}</TableCell>
-                          <TableCell>{r.dispensedByName}</TableCell>
+                          {isAdmin && <TableCell>{r.dispensedByName}</TableCell>}
                           <TableCell>{r.date ? format(new Date(r.date), "MMM d, yyyy") : "-"}</TableCell>
                           <TableCell className="text-muted-foreground text-xs max-w-[180px] truncate">{r.notes || "-"}</TableCell>
                         </TableRow>
@@ -182,6 +184,7 @@ export default function Reports() {
           </Card>
         </TabsContent>
 
+        {isAdmin && (
         <TabsContent value="daily" className="space-y-4">
           <Card>
             <CardHeader className="pb-2">
@@ -238,6 +241,7 @@ export default function Reports() {
             </CardContent>
           </Card>
         </TabsContent>
+        )}
 
         <TabsContent value="stock" className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
@@ -268,21 +272,21 @@ export default function Reports() {
                       <TableHead>Batch No.</TableHead>
                       <TableHead>Expiry</TableHead>
                       <TableHead>Date Received</TableHead>
-                      <TableHead>Logged By</TableHead>
+                      {isAdmin && <TableHead>Logged By</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                       Array(5).fill(0).map((_, i) => (
                         <TableRow key={i}>
-                          {Array(6).fill(0).map((_, j) => (
+                          {Array(isAdmin ? 6 : 5).fill(0).map((_, j) => (
                             <TableCell key={j}><Skeleton className="h-4 w-[80px]" /></TableCell>
                           ))}
                         </TableRow>
                       ))
                     ) : filteredStock.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No stock entries found.</TableCell>
+                        <TableCell colSpan={isAdmin ? 6 : 5} className="h-24 text-center text-muted-foreground">No stock entries found.</TableCell>
                       </TableRow>
                     ) : (
                       filteredStock.map((e) => (
@@ -292,7 +296,7 @@ export default function Reports() {
                           <TableCell className="font-mono text-xs text-muted-foreground">{e.batchNumber}</TableCell>
                           <TableCell>{e.expiryDate ? format(new Date(e.expiryDate), "MMM d, yyyy") : "-"}</TableCell>
                           <TableCell>{e.dateReceived ? format(new Date(e.dateReceived), "MMM d, yyyy") : "-"}</TableCell>
-                          <TableCell className="text-muted-foreground">{e.createdBy}</TableCell>
+                          {isAdmin && <TableCell className="text-muted-foreground">{e.createdBy}</TableCell>}
                         </TableRow>
                       ))
                     )}

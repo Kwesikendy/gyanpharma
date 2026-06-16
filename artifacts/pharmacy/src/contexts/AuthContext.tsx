@@ -174,7 +174,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await sendPasswordResetEmail(auth, email);
   }
 
-  const isAdmin = userProfile?.role === "admin";
+  // Only the specific admin email gets ultimate admin rights, as requested
+  const isAdmin = userProfile?.email === "admin@gyanchem.com";
 
   return (
     <AuthContext.Provider

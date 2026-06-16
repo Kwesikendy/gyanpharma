@@ -75,7 +75,7 @@ const rowVariants = {
 };
 
 export default function Dashboard() {
-  const { userProfile } = useAuth();
+  const { userProfile, isAdmin } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(new Date());
@@ -337,8 +337,8 @@ export default function Dashboard() {
         ))}
       </motion.div>
 
-      {/* ── Today's Sales by Staff (Admin/Pharmacist Only) ── */}
-      {userProfile?.role !== "sales" && stats.todaySalesByStaff && stats.todaySalesByStaff.length > 0 && (
+      {/* ── Today's Sales by Staff (Admin Only) ── */}
+      {isAdmin && stats.todaySalesByStaff && stats.todaySalesByStaff.length > 0 && (
         <motion.div variants={slideUp}>
           <Card className="overflow-hidden border shadow-md">
             <div className="flex items-center px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -479,7 +479,7 @@ export default function Dashboard() {
                               ? format(activity.timestamp, "MMM d, h:mm a")
                               : "Unknown time"}
                           </span>
-                          {activity.by && (
+                          {isAdmin && activity.by && (
                             <span className="text-xs text-muted-foreground">· {activity.by}</span>
                           )}
                           {activity.amount !== undefined && (

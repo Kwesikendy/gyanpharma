@@ -55,7 +55,7 @@ const dispensingSchema = z.object({
 type DispensingFormValues = z.infer<typeof dispensingSchema>;
 
 export default function Dispensing() {
-  const { userProfile } = useAuth();
+  const { userProfile, isAdmin } = useAuth();
   const { toast } = useToast();
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [records, setRecords] = useState<DispensingRecord[]>([]);
@@ -407,7 +407,7 @@ export default function Dispensing() {
                   <TableHead>Qty Dispensed</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Patient</TableHead>
-                  <TableHead>Dispensed By</TableHead>
+                  {isAdmin && <TableHead>Dispensed By</TableHead>}
                   <TableHead>Date</TableHead>
                   <TableHead>Notes</TableHead>
                 </TableRow>
@@ -416,14 +416,14 @@ export default function Dispensing() {
                 {loadingData ? (
                   Array(4).fill(0).map((_, i) => (
                     <TableRow key={i}>
-                      {Array(6).fill(0).map((_, j) => (
+                      {Array(isAdmin ? 7 : 6).fill(0).map((_, j) => (
                         <TableCell key={j}><Skeleton className="h-4 w-[80px]" /></TableCell>
                       ))}
                     </TableRow>
                   ))
                 ) : records.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">No dispensing records yet.</TableCell>
+                    <TableCell colSpan={isAdmin ? 7 : 6} className="h-24 text-center text-muted-foreground">No dispensing records yet.</TableCell>
                   </TableRow>
                 ) : (
                   records.map((rec) => (
@@ -440,7 +440,7 @@ export default function Dispensing() {
                         {rec.totalPrice ? `GH₵${rec.totalPrice.toFixed(2)}` : "-"}
                       </TableCell>
                       <TableCell className="text-muted-foreground">{rec.patientName || <span className="italic text-xs">Anonymous</span>}</TableCell>
-                      <TableCell>{rec.dispensedByName}</TableCell>
+                      {isAdmin && <TableCell>{rec.dispensedByName}</TableCell>}
                       <TableCell>{rec.date ? format(new Date(rec.date), "MMM d, yyyy") : "-"}</TableCell>
                       <TableCell className="text-muted-foreground text-xs max-w-[200px] truncate">{rec.notes || "-"}</TableCell>
                     </motion.tr>

@@ -37,7 +37,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/dispensing", label: "Dispensing", icon: Pill },
     ...(userProfile?.role !== "sales" ? [{ href: "/reports", label: "Reports", icon: FileText }] : []),
     ...(isAdmin ? [{ href: "/users", label: "Users", icon: Users }] : []),
-    ...(userProfile?.role !== "sales" ? [{ href: "/settings", label: "Settings", icon: Settings }] : []),
+    { href: "/settings", label: "Settings", icon: Settings },
   ];
 
   return (

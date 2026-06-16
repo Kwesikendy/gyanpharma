@@ -46,7 +46,7 @@ function Router() {
         <AdminRoute><Layout><UsersPage /></Layout></AdminRoute>
       </Route>
       <Route path="/settings">
-        <PharmacistRoute><Layout><SettingsPage /></Layout></PharmacistRoute>
+        <ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>
       </Route>
 
       <Route path="/">
