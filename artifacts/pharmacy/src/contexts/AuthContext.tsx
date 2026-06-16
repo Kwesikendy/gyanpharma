@@ -180,11 +180,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function updateUserEmailAndName(newEmail: string, newName: string) {
     if (!currentUser) throw new Error("No user is logged in");
     
-    // Update Firebase Auth profile
+    // Only update the display name, ignore the email change
     const promises: Promise<any>[] = [];
-    if (newEmail !== currentUser.email) {
-      promises.push(updateEmail(currentUser, newEmail));
-    }
     if (newName !== currentUser.displayName) {
       promises.push(updateProfile(currentUser, { displayName: newName }));
     }
@@ -193,13 +190,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Update Firestore user document
     await updateDoc(doc(db, "users", currentUser.uid), {
-      email: newEmail,
       displayName: newName,
     });
   }
 
-  // Only the specific admin email gets ultimate admin rights, as requested
-  const isAdmin = userProfile?.email === "gyankirchoff@gmail.com";
+  // Allow both the old and new admin emails during this transition
+  const isAdmin = userProfile?.email === "gyankirchoff@gmail.com" || userProfile?.email === "admin@gyanchem.com";
 
   return (
     <AuthContext.Provider

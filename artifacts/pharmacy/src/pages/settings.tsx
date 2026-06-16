@@ -216,13 +216,16 @@ export default function SettingsPage() {
                   id="new-email"
                   type="email"
                   value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="Your email address"
+                  disabled={true}
+                  className="bg-muted text-muted-foreground"
                 />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Emails cannot be changed here due to Firebase security rules. To change your email, please create a new account from the Users page.
+                </p>
               </div>
               <Button 
                 onClick={handleUpdateProfile} 
-                disabled={!newEmail || !newName || updatingProfile || (newEmail === userProfile?.email && newName === userProfile?.displayName)}
+                disabled={!newName || updatingProfile || (newName === userProfile?.displayName)}
                 variant="secondary"
                 className="w-full sm:w-auto"
               >
