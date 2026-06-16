@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { getUsers, PharmacyUser } from "@/lib/firestore";
+import { doc, deleteDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -14,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, UserPlus, Loader2, ShieldCheck, User, Mail } from "lucide-react";
+import { Users, UserPlus, Loader2, ShieldCheck, User, Mail, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 const newUserSchema = z.object({
@@ -52,6 +54,18 @@ export default function UsersPage() {
       toast({ title: "Email Sent", description: `A password reset link has been sent to ${email}.` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Failed to send reset email.", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!window.confirm(`Are you sure you want to delete the profile for ${userName}? This will remove them from the system.`)) return;
+    
+    try {
+      await deleteDoc(doc(db, "users", userId));
+      toast({ title: "User Deleted", description: `${userName}'s profile has been removed.` });
+      fetchUsers();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to delete user profile.", variant: "destructive" });
     }
   };
 
@@ -133,9 +147,16 @@ export default function UsersPage() {
                         {user.createdAt ? format(user.createdAt, "MMM d, yyyy") : "-"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="outline" size="sm" onClick={() => handleResetPassword(user.email)}>
-                          <Mail className="mr-2 h-3 w-3" /> Reset Password
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleResetPassword(user.email)}>
+                            <Mail className="mr-2 h-3 w-3" /> Reset Password
+                          </Button>
+                          {user.email !== "admin@gyanchem.com" && (
+                            <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(user.id!, user.displayName)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
