@@ -166,6 +166,21 @@ export default function Dashboard() {
     },
   ];
 
+  if (isAdmin) {
+    statCards.splice(1, 0, {
+      title: "Total Stock Value",
+      value: stats.totalInventoryValue || 0,
+      sub: "Potential gross revenue",
+      icon: DollarSign,
+      gradient: "from-teal-500 to-emerald-600",
+      glow: "shadow-teal-200",
+      ring: "bg-teal-400",
+      badge: "Value",
+      badgeIcon: Package,
+      isCurrency: true,
+    });
+  }
+
   const floatingPositions = [
     { top: "10%", left: "5%" },
     { top: "60%", left: "12%" },

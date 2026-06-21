@@ -141,6 +141,7 @@ export interface StaffSales {
 
 export interface DashboardStats {
   totalMedicines: number;
+  totalInventoryValue: number;
   lowStockCount: number;
   expiredCount: number;
   expiringSoonCount: number;
@@ -366,6 +367,7 @@ export async function getDashboardStats(currentUserId?: string): Promise<Dashboa
     getDocs(query(collection(db, "dispensingRecords"), where("date", "==", todayStr))),
   ]);
 
+  let totalInventoryValue = 0;
   const lowStockCount = medicines.filter(
     (m) => m.quantity < m.lowStockThreshold && m.status === "active"
   ).length;
@@ -373,6 +375,12 @@ export async function getDashboardStats(currentUserId?: string): Promise<Dashboa
   const expiringSoonCount = medicines.filter(
     (m) => isExpiringSoon(m.expiryDate) && m.status === "active"
   ).length;
+
+  medicines.forEach(m => {
+    if (m.status === "active" && m.quantity > 0) {
+      totalInventoryValue += (m.quantity * (m.price || 0));
+    }
+  });
 
   const recentActivity: ActivityItem[] = [];
 
@@ -432,6 +440,7 @@ export async function getDashboardStats(currentUserId?: string): Promise<Dashboa
 
   return {
     totalMedicines: medicines.length,
+    totalInventoryValue,
     lowStockCount,
     expiredCount,
     expiringSoonCount,
