@@ -23,6 +23,8 @@ import {
   Loader2,
   DatabaseBackup,
   Clock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { format } from "date-fns";
 import { exportAllData } from "@/lib/firestore";
@@ -43,6 +45,7 @@ export default function SettingsPage() {
   const [newName, setNewName] = useState(userProfile?.displayName || "");
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [updatingProfile, setUpdatingProfile] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const { updateUserPassword, updateUserEmailAndName } = useAuth();
 
@@ -238,13 +241,23 @@ export default function SettingsPage() {
               <h3 className="text-sm font-medium border-b pb-2">Change Password</h3>
               <div className="grid gap-2">
               <label htmlFor="new-password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">New Password</label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Min. 6 characters"
-              />
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Min. 6 characters"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <Button onClick={handleUpdatePassword} disabled={!newPassword || newPassword.length < 6 || updatingPassword} className="w-full sm:w-auto">
               {updatingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
