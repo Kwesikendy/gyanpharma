@@ -81,10 +81,10 @@ export default function Dashboard() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    getDashboardStats(userProfile?.id).then(setStats).finally(() => setLoading(false));
+    getDashboardStats(userProfile?.uid).then(setStats).finally(() => setLoading(false));
     const tick = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(tick);
-  }, [userProfile?.id]);
+  }, [userProfile?.uid]);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -143,8 +143,8 @@ export default function Dashboard() {
     },
     {
       title: "Today's Revenue",
-      value: userProfile?.role === "sales" ? (stats.myTodayRevenue || 0) : (stats.todayRevenue || 0),
-      sub: userProfile?.role === "sales" ? "Your sales today" : "Total sales today",
+      value: !isAdmin ? (stats.myTodayRevenue || 0) : (stats.todayRevenue || 0),
+      sub: !isAdmin ? "Your sales today" : "Total sales today",
       icon: DollarSign,
       gradient: "from-blue-500 to-indigo-600",
       glow: "shadow-blue-200",
@@ -155,8 +155,8 @@ export default function Dashboard() {
     },
     {
       title: "Items Sold Today",
-      value: userProfile?.role === "sales" ? (stats.myItemsSoldToday || 0) : (stats.itemsSoldToday || 0),
-      sub: userProfile?.role === "sales" ? "Your units dispensed" : "Total units dispensed",
+      value: !isAdmin ? (stats.myItemsSoldToday || 0) : (stats.itemsSoldToday || 0),
+      sub: !isAdmin ? "Your units dispensed" : "Total units dispensed",
       icon: ShoppingCart,
       gradient: "from-purple-500 to-violet-600",
       glow: "shadow-purple-200",
@@ -387,6 +387,56 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* ── My Items Sold Today (For Sales/Pharmacist Staff) ── */}
+      {!isAdmin && stats.myTodayRecords && (
+        <motion.div variants={slideUp}>
+          <Card className="overflow-hidden border shadow-md">
+            <div className="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-purple-50 to-violet-50">
+              <div className="flex items-center gap-2">
+                <motion.div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100">
+                  <ShoppingCart className="h-4 w-4 text-purple-600" />
+                </motion.div>
+                <div>
+                  <h2 className="font-semibold text-sm text-foreground">My Items Sold Today</h2>
+                  <p className="text-xs text-muted-foreground">{stats.myTodayRecords.length} items dispensed by you today</p>
+                </div>
+              </div>
+            </div>
+            <CardContent className="p-0">
+              {stats.myTodayRecords.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
+                  <Pill className="h-8 w-8 text-purple-200" />
+                  <p className="text-sm">No sales recorded yet today</p>
+                  <p className="text-xs text-muted-foreground/60">Items you dispense today will appear here</p>
+                </div>
+              ) : (
+                <div className="divide-y max-h-96 overflow-y-auto">
+                  {stats.myTodayRecords.map((rec) => (
+                    <div key={rec.id} className="flex items-center justify-between px-6 py-3.5 hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600 font-semibold text-xs">
+                          {rec.quantityDispensed}x
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{rec.medicineName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {rec.createdAt ? format(rec.createdAt, "h:mm a") : "Today"} {rec.patientName ? `· Patient: ${rec.patientName}` : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-purple-600">GH₵{(rec.totalPrice || 0).toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">GH₵{(rec.unitPrice || 0).toFixed(2)}/unit</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

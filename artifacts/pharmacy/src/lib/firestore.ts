@@ -151,6 +151,7 @@ export interface DashboardStats {
   todaySalesByStaff: StaffSales[];
   myTodayRevenue?: number;
   myItemsSoldToday?: number;
+  myTodayRecords?: DispensingRecord[];
   recentActivity: ActivityItem[];
 }
 
@@ -415,6 +416,7 @@ export async function getDashboardStats(currentUserId?: string): Promise<Dashboa
   let todayRevenue = 0;
   let itemsSoldToday = 0;
   const staffSalesMap = new Map<string, StaffSales>();
+  const myTodayRecords: DispensingRecord[] = [];
   
   todayDispensingSnap.forEach((d) => {
     const data = d.data();
@@ -433,6 +435,15 @@ export async function getDashboardStats(currentUserId?: string): Promise<Dashboa
       staff.revenue += price;
       staff.itemsSold += qty;
     }
+
+    if (currentUserId && uId === currentUserId) {
+      myTodayRecords.push({ id: d.id, ...data, createdAt: toDate(data.createdAt) } as DispensingRecord);
+    }
+  });
+
+  myTodayRecords.sort((a, b) => {
+    if (!a.createdAt || !b.createdAt) return 0;
+    return b.createdAt.getTime() - a.createdAt.getTime();
   });
 
   const todaySalesByStaff = Array.from(staffSalesMap.values()).sort((a, b) => b.revenue - a.revenue);
@@ -450,6 +461,7 @@ export async function getDashboardStats(currentUserId?: string): Promise<Dashboa
     todaySalesByStaff,
     myTodayRevenue: myStats?.revenue || 0,
     myItemsSoldToday: myStats?.itemsSold || 0,
+    myTodayRecords,
     recentActivity: recentActivity.slice(0, 8),
   };
 }
