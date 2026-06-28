@@ -170,44 +170,39 @@ export default function Dispensing() {
     setCart(cart.filter(item => item.id !== id));
   }
 
-  async function onCompleteOrder(data: OrderFormValues) {
+  function onCompleteOrder(data: OrderFormValues) {
     if (cart.length === 0) return;
     setSubmitting(true);
     
-    try {
-      const promises = cart.map(item => {
-        return addDispensingRecord({
-          medicineId: item.medicineId,
-          medicineName: item.medicineName,
-          quantityDispensed: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice,
-          patientName: data.patientName,
-          date: data.date,
-          notes: data.notes,
-          dispensedBy: userProfile?.uid || "",
-          dispensedByName: userProfile?.displayName || userProfile?.email || "Unknown",
-        });
+    cart.forEach(item => {
+      addDispensingRecord({
+        medicineId: item.medicineId,
+        medicineName: item.medicineName,
+        quantityDispensed: item.quantity,
+        unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice,
+        patientName: data.patientName,
+        date: data.date,
+        notes: data.notes,
+        dispensedBy: userProfile?.uid || "",
+        dispensedByName: userProfile?.displayName || userProfile?.email || "Unknown",
+      }).catch((err: any) => {
+        toast({ title: "Sync Error", description: err.message || `Failed to sync ${item.medicineName}.`, variant: "destructive" });
       });
+    });
 
-      await Promise.all(promises);
-
-      toast({
-        title: "Order completed",
-        description: `${cart.length} items dispensed successfully.`,
-      });
-      
-      setCart([]);
-      orderForm.reset({
-        patientName: "",
-        date: new Date().toISOString().split("T")[0],
-        notes: "",
-      });
-    } catch (err: any) {
-      toast({ title: "Sync Error", description: err.message || "Failed to sync dispensing order.", variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
+    toast({
+      title: "Order completed",
+      description: `${cart.length} item(s) dispensed (syncing in background).`,
+    });
+    
+    setCart([]);
+    orderForm.reset({
+      patientName: "",
+      date: new Date().toISOString().split("T")[0],
+      notes: "",
+    });
+    setSubmitting(false);
   }
 
   return (
