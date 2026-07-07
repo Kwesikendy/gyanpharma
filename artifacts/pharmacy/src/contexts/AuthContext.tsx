@@ -194,8 +194,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
-  // Allow both the old and new admin emails during this transition
-  const isAdmin = userProfile?.email === "gyankirchoff@gmail.com" || userProfile?.email === "admin@gyanchem.com";
+  // Allow users with the 'admin' role, plus old/new admin emails during transition
+  const isAdmin = userProfile?.role === "admin" || userProfile?.email === "gyankirchoff@gmail.com" || userProfile?.email === "admin@gyanchem.com";
 
   return (
     <AuthContext.Provider
