@@ -66,7 +66,7 @@ export default function Inventory() {
     setDialogOpen(true);
   }
 
-  function handleSave(data: MedicineInput) {
+  async function handleSave(data: MedicineInput) {
     setSubmitting(true);
     
     // Optimistic background sync

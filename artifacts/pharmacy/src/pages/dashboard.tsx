@@ -51,12 +51,12 @@ function PulseRing({ color }: { color: string }) {
   );
 }
 
-const containerVariants = {
+const containerVariants: any = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
 };
 
-const cardVariants = {
+const cardVariants: any = {
   hidden: { opacity: 0, y: 40, scale: 0.94 },
   visible: {
     opacity: 1, y: 0, scale: 1,
@@ -64,12 +64,12 @@ const cardVariants = {
   },
 };
 
-const slideUp = {
+const slideUp: any = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-const rowVariants = {
+const rowVariants: any = {
   hidden: { opacity: 0, x: -16 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };

@@ -14,6 +14,7 @@ import Dashboard from "@/pages/dashboard";
 import Inventory from "@/pages/inventory";
 import StockEntry from "@/pages/stock-entry";
 import Dispensing from "@/pages/dispensing";
+import SalesHistory from "@/pages/sales-history";
 import Reports from "@/pages/reports";
 import UsersPage from "@/pages/users";
 import SettingsPage from "@/pages/settings";
@@ -38,6 +39,9 @@ function Router() {
       </Route>
       <Route path="/dispensing">
         <ProtectedRoute><Layout><Dispensing /></Layout></ProtectedRoute>
+      </Route>
+      <Route path="/sales-history">
+        <ProtectedRoute><Layout><SalesHistory /></Layout></ProtectedRoute>
       </Route>
       <Route path="/reports">
         <PharmacistRoute><Layout><Reports /></Layout></PharmacistRoute>

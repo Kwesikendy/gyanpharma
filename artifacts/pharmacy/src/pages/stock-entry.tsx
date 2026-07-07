@@ -19,7 +19,7 @@ import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const containerVariants = {
+const containerVariants: any = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -27,7 +27,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: any = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
@@ -36,7 +36,7 @@ const itemVariants = {
   },
 };
 
-const rowVariants = {
+const rowVariants: any = {
   hidden: { opacity: 0, x: -10 },
   visible: { opacity: 1, x: 0 },
 };

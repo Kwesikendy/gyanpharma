@@ -16,6 +16,7 @@ import {
   Wifi,
   RefreshCw,
   DownloadCloud,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     ...(userProfile?.role !== "sales" ? [{ href: "/inventory", label: "Inventory", icon: Package }] : []),
     ...(userProfile?.role !== "sales" ? [{ href: "/stock-entry", label: "Stock Entry", icon: ArrowDownToLine }] : []),
     { href: "/dispensing", label: "Dispensing", icon: Pill },
+    { href: "/sales-history", label: "Sales History", icon: History },
     ...(userProfile?.role !== "sales" ? [{ href: "/reports", label: "Reports", icon: FileText }] : []),
     ...(isAdmin ? [{ href: "/users", label: "Users", icon: Users }] : []),
     { href: "/settings", label: "Settings", icon: Settings },
