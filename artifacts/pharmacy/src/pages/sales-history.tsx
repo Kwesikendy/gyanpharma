@@ -63,7 +63,7 @@ export default function SalesHistory() {
   
   // Filtering & Sorting State
   const [searchQuery, setSearchQuery] = useState("");
-  const [scope, setScope] = useState<"my" | "all">("my"); // 'my' personal sales or 'all' store sales
+  const [scope, setScope] = useState<"my" | "all">("all"); // 'my' personal sales or 'all' store sales
   const [datePreset, setDatePreset] = useState<"all" | "today" | "week" | "month" | "custom">("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
