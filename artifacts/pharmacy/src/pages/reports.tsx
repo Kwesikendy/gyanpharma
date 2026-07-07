@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getDispensingRecords, getStockEntries, DispensingRecord, StockEntry } from "@/lib/firestore";
+import { subscribeToDispensingRecords, subscribeToStockEntries, DispensingRecord, StockEntry } from "@/lib/firestore";
 import { exportDispensingToCsv, exportStockEntriesToCsv } from "@/lib/exportUtils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -26,13 +26,25 @@ export default function Reports() {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([getDispensingRecords(), getStockEntries()])
-      .then(([recs, entries]) => {
-        setDispensingRecords(recs);
-        setStockEntries(entries);
-      })
-      .catch(() => toast({ title: "Error", description: "Could not load report data.", variant: "destructive" }))
-      .finally(() => setLoading(false));
+    let recsLoaded = false;
+    let entriesLoaded = false;
+    const checkDone = () => {
+      if (recsLoaded && entriesLoaded) setLoading(false);
+    };
+    const unsubRecs = subscribeToDispensingRecords((recs) => {
+      setDispensingRecords(recs);
+      recsLoaded = true;
+      checkDone();
+    });
+    const unsubEntries = subscribeToStockEntries((entries) => {
+      setStockEntries(entries);
+      entriesLoaded = true;
+      checkDone();
+    });
+    return () => {
+      unsubRecs();
+      unsubEntries();
+    };
   }, []);
 
   const filteredDispensing = dispensingRecords.filter((r) => {

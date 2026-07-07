@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getDashboardStats, DashboardStats } from "@/lib/firestore";
+import { subscribeToDashboardStats, DashboardStats } from "@/lib/firestore";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Package, AlertTriangle, AlertCircle, ArrowDownToLine,
@@ -81,13 +81,21 @@ export default function Dashboard() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    getDashboardStats(userProfile?.uid).then(setStats).finally(() => setLoading(false));
+    setLoading(true);
+    const unsub = subscribeToDashboardStats(userProfile?.uid, (newStats) => {
+      setStats(newStats);
+      setLoading(false);
+    });
     const tick = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(tick);
+    return () => {
+      unsub();
+      clearInterval(tick);
+    };
   }, [userProfile?.uid]);
 
   const greeting = () => {
-    const h = new Date().getHours();
+    // Use UTC hour since Ghana is in GMT (UTC+0) year-round
+    const h = new Date().getUTCHours();
     if (h < 12) return "Good morning";
     if (h < 17) return "Good afternoon";
     return "Good evening";
@@ -142,9 +150,9 @@ export default function Dashboard() {
       badgeIcon: Activity,
     },
     {
-      title: "Today's Revenue",
+      title: !isAdmin ? "My Revenue Today" : "Total Store Revenue",
       value: !isAdmin ? (stats.myTodayRevenue || 0) : (stats.todayRevenue || 0),
-      sub: !isAdmin ? "Your sales today" : "Total sales today",
+      sub: !isAdmin ? "Your personal sales today" : "All staff sales today",
       icon: DollarSign,
       gradient: "from-blue-500 to-indigo-600",
       glow: "shadow-blue-200",
@@ -154,9 +162,9 @@ export default function Dashboard() {
       isCurrency: true,
     },
     {
-      title: "Items Sold Today",
+      title: !isAdmin ? "My Units Sold Today" : "Total Store Units",
       value: !isAdmin ? (stats.myItemsSoldToday || 0) : (stats.itemsSoldToday || 0),
-      sub: !isAdmin ? "Your units dispensed" : "Total units dispensed",
+      sub: !isAdmin ? "Your personal units dispensed" : "All units dispensed today",
       icon: ShoppingCart,
       gradient: "from-purple-500 to-violet-600",
       glow: "shadow-purple-200",

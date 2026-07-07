@@ -124,7 +124,8 @@ export default function Dispensing() {
     });
 
     const unsubRecords = subscribeToDispensingRecords((recs) => {
-      setRecords(recs.slice(0, 30));
+      const filtered = isAdmin ? recs : recs.filter((r) => r.dispensedBy === userProfile?.uid);
+      setRecords(filtered.slice(0, 30));
       recordsLoaded = true;
       checkLoaded();
     });
@@ -133,7 +134,7 @@ export default function Dispensing() {
       unsubMeds();
       unsubRecords();
     };
-  }, []);
+  }, [isAdmin, userProfile?.uid]);
 
   const quantityInCart = cart.filter(c => c.medicineId === selectedMedicine?.id).reduce((acc, curr) => acc + curr.quantity, 0);
 

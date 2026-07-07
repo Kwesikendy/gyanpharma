@@ -466,6 +466,156 @@ export async function getDashboardStats(currentUserId?: string): Promise<Dashboa
   };
 }
 
+export function subscribeToDashboardStats(
+  currentUserId: string | undefined,
+  callback: (stats: DashboardStats) => void
+): () => void {
+  const todayStr = new Date().toISOString().split("T")[0];
+
+  let meds: Medicine[] = [];
+  let suppsCount = 0;
+  let stockEntries: StockEntry[] = [];
+  let recentDispensing: DispensingRecord[] = [];
+  let todayDispensing: DispensingRecord[] = [];
+
+  let medsLoaded = false;
+  let suppsLoaded = false;
+  let stockLoaded = false;
+  let recentDispLoaded = false;
+  let todayDispLoaded = false;
+
+  const recompute = () => {
+    if (!medsLoaded || !suppsLoaded || !stockLoaded || !recentDispLoaded || !todayDispLoaded) return;
+
+    let totalInventoryValue = 0;
+    const lowStockCount = meds.filter((m) => m.quantity < m.lowStockThreshold && m.status === "active").length;
+    const expiredCount = meds.filter((m) => isExpired(m.expiryDate) && m.status === "active").length;
+    const expiringSoonCount = meds.filter((m) => isExpiringSoon(m.expiryDate) && m.status === "active").length;
+
+    meds.forEach((m) => {
+      if (m.status === "active" && m.quantity > 0) {
+        totalInventoryValue += m.quantity * (m.price || 0);
+      }
+    });
+
+    const recentActivity: ActivityItem[] = [];
+    recentDispensing.slice(0, 5).forEach((d) => {
+      recentActivity.push({
+        id: d.id,
+        type: "dispensed",
+        description: `Dispensed ${d.quantityDispensed} ${d.medicineName}${d.patientName ? ` to ${d.patientName}` : ""}`,
+        amount: d.totalPrice,
+        timestamp: d.createdAt,
+        by: d.dispensedByName,
+      });
+    });
+
+    stockEntries.slice(0, 5).forEach((d) => {
+      recentActivity.push({
+        id: d.id,
+        type: "stock_in",
+        description: `Received ${d.quantityReceived} units of ${d.medicineName}`,
+        timestamp: d.createdAt,
+        by: d.createdBy,
+      });
+    });
+
+    recentActivity.sort((a, b) => {
+      if (!a.timestamp || !b.timestamp) return 0;
+      return b.timestamp.getTime() - a.timestamp.getTime();
+    });
+
+    let todayRevenue = 0;
+    let itemsSoldToday = 0;
+    const staffSalesMap = new Map<string, StaffSales>();
+    const myTodayRecords: DispensingRecord[] = [];
+
+    todayDispensing.forEach((d) => {
+      const price = d.totalPrice || 0;
+      const qty = d.quantityDispensed || 0;
+
+      todayRevenue += price;
+      itemsSoldToday += qty;
+
+      const uId = d.dispensedBy;
+      if (uId) {
+        if (!staffSalesMap.has(uId)) {
+          staffSalesMap.set(uId, { userId: uId, name: d.dispensedByName || "Unknown", revenue: 0, itemsSold: 0 });
+        }
+        const staff = staffSalesMap.get(uId)!;
+        staff.revenue += price;
+        staff.itemsSold += qty;
+      }
+
+      if (currentUserId && uId === currentUserId) {
+        myTodayRecords.push(d);
+      }
+    });
+
+    myTodayRecords.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    });
+
+    const todaySalesByStaff = Array.from(staffSalesMap.values()).sort((a, b) => b.revenue - a.revenue);
+    const myStats = currentUserId ? staffSalesMap.get(currentUserId) : undefined;
+
+    callback({
+      totalMedicines: meds.length,
+      totalInventoryValue,
+      lowStockCount,
+      expiredCount,
+      expiringSoonCount,
+      totalSuppliers: suppsCount,
+      todayRevenue,
+      itemsSoldToday,
+      todaySalesByStaff,
+      myTodayRevenue: myStats?.revenue || 0,
+      myItemsSoldToday: myStats?.itemsSold || 0,
+      myTodayRecords,
+      recentActivity: recentActivity.slice(0, 8),
+    });
+  };
+
+  const unsubMeds = onSnapshot(query(collection(db, "medicines"), orderBy("name")), (snap) => {
+    meds = snap.docs.map((d) => ({ id: d.id, ...d.data(), createdAt: toDate(d.data().createdAt), updatedAt: toDate(d.data().updatedAt) } as Medicine));
+    medsLoaded = true;
+    recompute();
+  }, (err) => console.error("meds snapshot err:", err));
+
+  const unsubSupps = onSnapshot(collection(db, "suppliers"), (snap) => {
+    suppsCount = snap.size;
+    suppsLoaded = true;
+    recompute();
+  }, (err) => console.error("supps snapshot err:", err));
+
+  const unsubStock = onSnapshot(query(collection(db, "stockEntries"), orderBy("createdAt", "desc"), limit(5)), (snap) => {
+    stockEntries = snap.docs.map((d) => ({ id: d.id, ...d.data(), createdAt: toDate(d.data().createdAt) } as StockEntry));
+    stockLoaded = true;
+    recompute();
+  }, (err) => console.error("stock snapshot err:", err));
+
+  const unsubRecentDisp = onSnapshot(query(collection(db, "dispensingRecords"), orderBy("createdAt", "desc"), limit(5)), (snap) => {
+    recentDispensing = snap.docs.map((d) => ({ id: d.id, ...d.data(), createdAt: toDate(d.data().createdAt) } as DispensingRecord));
+    recentDispLoaded = true;
+    recompute();
+  }, (err) => console.error("recentDisp snapshot err:", err));
+
+  const unsubTodayDisp = onSnapshot(query(collection(db, "dispensingRecords"), where("date", "==", todayStr)), (snap) => {
+    todayDispensing = snap.docs.map((d) => ({ id: d.id, ...d.data(), createdAt: toDate(d.data().createdAt) } as DispensingRecord));
+    todayDispLoaded = true;
+    recompute();
+  }, (err) => console.error("todayDisp snapshot err:", err));
+
+  return () => {
+    unsubMeds();
+    unsubSupps();
+    unsubStock();
+    unsubRecentDisp();
+    unsubTodayDisp();
+  };
+}
+
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 export interface PharmacyUser {
