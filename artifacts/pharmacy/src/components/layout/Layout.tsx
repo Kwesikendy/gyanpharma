@@ -28,6 +28,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { userProfile, logout, isAdmin } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [dismissedInstall, setDismissedInstall] = useState(false);
   const { isOnline, justCameBack } = useOnlineStatus();
   const { isInstallable, installPWA } = useInstallPWA();
 
@@ -248,6 +249,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
           )}
         >
           <div className="mx-auto max-w-7xl">
+            {isInstallable && !dismissedInstall && (
+              <div className="mb-5 neu-raised px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="neu-icon-badge h-9 w-9 text-emerald-700 dark:text-emerald-400 shrink-0">
+                    <DownloadCloud className="h-4 w-4" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">Install Gyan Chemicals App</p>
+                    <p className="text-xs text-muted-foreground">Add to your home screen or desktop for faster access and offline support.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    size="sm"
+                    onClick={installPWA}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    <DownloadCloud className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                    Install Now
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    onClick={() => setDismissedInstall(true)}
+                    aria-label="Dismiss install prompt"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                </div>
+              </div>
+            )}
             <motion.div
               key={location}
               initial={{ opacity: 0, y: 16 }}
