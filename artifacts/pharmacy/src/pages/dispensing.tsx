@@ -489,7 +489,7 @@ export default function Dispensing() {
                   <Button
                     type="submit"
                     disabled={cart.length === 0 || submitting}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                   >
                     {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
                     Complete Dispensing
@@ -504,9 +504,11 @@ export default function Dispensing() {
       {/* History Section */}
       <motion.div variants={itemVariants}>
         <Card className="overflow-hidden border shadow-sm">
-          <div className="flex items-center gap-2 border-b bg-muted/40 px-6 py-4">
-            <History className="h-5 w-5 text-indigo-600" />
-            <CardTitle className="text-lg">Dispensing History</CardTitle>
+          <div className="flex items-center gap-3 border-b bg-muted/40 px-6 py-4">
+            <div className="neu-icon-badge h-9 w-9 text-emerald-700 dark:text-emerald-400">
+              <History className="h-4 w-4" aria-hidden="true" />
+            </div>
+            <CardTitle className="text-base font-semibold">Dispensing History</CardTitle>
           </div>
           <CardContent className="p-0">
           <div className="rounded-md border">
