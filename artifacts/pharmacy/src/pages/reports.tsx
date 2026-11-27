@@ -86,57 +86,82 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <FileText className="h-7 w-7 text-primary" />
-        <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
+      {/* Header Banner */}
+      <div className="rounded-2xl bg-[#0F2F20] px-6 py-6 sm:px-8 text-white border border-emerald-950/60 shadow-sm">
+        <p className="border-l-2 border-emerald-400 pl-3 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200/90 mb-2">
+          Analytics & Audit Logs
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <FileText className="h-7 w-7 text-emerald-300 shrink-0" aria-hidden="true" />
+          Reports
+        </h1>
+        <p className="mt-1 text-emerald-100/80 text-sm">
+          Filter dispensing history, daily staff revenue, and stock receipts by date range.
+        </p>
       </div>
 
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">Date range:</div>
-            <div className="flex items-center gap-2">
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[160px]" data-testid="input-date-from" />
-              <span className="text-muted-foreground">-</span>
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px]" data-testid="input-date-to" />
-            </div>
-            {(dateFrom || dateTo) && (
-              <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }}>
-                Clear dates
-              </Button>
-            )}
+      {/* Date Range Filter */}
+      <div className="neu-raised p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Date range:</div>
+          <div className="flex items-center gap-2">
+            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[160px] bg-white dark:bg-background" data-testid="input-date-from" />
+            <span className="text-muted-foreground">-</span>
+            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px] bg-white dark:bg-background" data-testid="input-date-to" />
           </div>
-        </CardContent>
-      </Card>
+          {(dateFrom || dateTo) && (
+            <Button variant="ghost" size="sm" onClick={() => { setDateFrom(""); setDateTo(""); }}>
+              Clear dates
+            </Button>
+          )}
+        </div>
+      </div>
 
       <Tabs defaultValue="dispensing">
-        <TabsList className="grid w-full max-w-[550px] grid-cols-3">
-          <TabsTrigger value="dispensing">Dispensing History</TabsTrigger>
-          {isAdmin && <TabsTrigger value="daily">Daily Sales Summary</TabsTrigger>}
-          <TabsTrigger value="stock">Stock Entries</TabsTrigger>
+        <TabsList className="neu-track h-auto w-full max-w-[560px] grid grid-cols-3 bg-transparent p-1">
+          <TabsTrigger
+            value="dispensing"
+            className="rounded-full text-xs font-semibold py-2 data-[state=active]:bg-[var(--neu-bg)] data-[state=active]:text-foreground data-[state=active]:shadow-[var(--neu-raised-sm)] dark:data-[state=active]:bg-card"
+          >
+            Dispensing History
+          </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger
+              value="daily"
+              className="rounded-full text-xs font-semibold py-2 data-[state=active]:bg-[var(--neu-bg)] data-[state=active]:text-foreground data-[state=active]:shadow-[var(--neu-raised-sm)] dark:data-[state=active]:bg-card"
+            >
+              Daily Sales Summary
+            </TabsTrigger>
+          )}
+          <TabsTrigger
+            value="stock"
+            className="rounded-full text-xs font-semibold py-2 data-[state=active]:bg-[var(--neu-bg)] data-[state=active]:text-foreground data-[state=active]:shadow-[var(--neu-raised-sm)] dark:data-[state=active]:bg-card"
+          >
+            Stock Entries
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="dispensing" className="space-y-4">
+        <TabsContent value="dispensing" className="space-y-4 mt-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
-              <div className="bg-gradient-to-br from-emerald-500 to-green-600 px-5 py-2.5 rounded-xl shadow-sm text-white min-w-[160px]">
-                <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider mb-0.5">Total Revenue</p>
-                <p className="text-2xl font-bold">GH₵{totalRevenue.toFixed(2)}</p>
+              <div className="neu-raised neu-raised--press px-5 py-3 min-w-[190px]">
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-0.5">Total Revenue</p>
+                <p className="text-2xl font-bold font-mono tabular-nums text-emerald-800 dark:text-emerald-400">GH₵{totalRevenue.toFixed(2)}</p>
               </div>
               <div className="relative max-w-xs w-full sm:w-[250px]">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 <Input
                   type="search"
                   placeholder="Search medicine, patient..."
-                  className="pl-8"
+                  className="pl-9 bg-white dark:bg-background"
                   value={dispensingSearch}
                   onChange={(e) => setDispensingSearch(e.target.value)}
                   data-testid="input-search-dispensing"
                 />
               </div>
             </div>
-            <Button variant="outline" onClick={() => exportDispensingToCsv(filteredDispensing)} disabled={filteredDispensing.length === 0}>
-              <Download className="mr-2 h-4 w-4" /> Export CSV ({filteredDispensing.length})
+            <Button variant="outline" className="bg-white dark:bg-card" onClick={() => exportDispensingToCsv(filteredDispensing)} disabled={filteredDispensing.length === 0}>
+              <Download className="mr-2 h-4 w-4" aria-hidden="true" /> Export CSV ({filteredDispensing.length})
             </Button>
           </div>
 

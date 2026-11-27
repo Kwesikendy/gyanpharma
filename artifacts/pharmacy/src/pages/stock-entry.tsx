@@ -137,29 +137,37 @@ export default function StockEntry() {
       initial="hidden"
       animate="visible"
     >
-      <motion.div variants={itemVariants} className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 shadow-sm">
-          <PackagePlus className="h-6 w-6 text-emerald-600" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Stock Entry</h1>
-          <p className="text-sm text-muted-foreground">Log new medicine deliveries into inventory</p>
-        </div>
+      {/* Header Banner */}
+      <motion.div
+        variants={itemVariants}
+        className="rounded-2xl bg-[#0F2F20] px-6 py-6 sm:px-8 text-white border border-emerald-950/60 shadow-sm"
+      >
+        <p className="border-l-2 border-emerald-400 pl-3 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200/90 mb-2">
+          Restock & Receiving
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <PackagePlus className="h-7 w-7 text-emerald-300 shrink-0" aria-hidden="true" />
+          Stock Entry
+        </h1>
+        <p className="mt-1 text-emerald-100/80 text-sm">
+          Log incoming medicine deliveries and automatically update inventory counts.
+        </p>
       </motion.div>
 
       <motion.div variants={itemVariants}>
-        <Card className="overflow-hidden border-0 shadow-lg shadow-emerald-900/5">
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-white relative overflow-hidden">
-            <div className="absolute -right-6 -top-10 opacity-20">
-              <Box className="h-40 w-40" />
+        <Card className="overflow-hidden border shadow-sm bg-card">
+          <div className="px-6 py-4 border-b bg-muted/40 flex items-center gap-3">
+            <div className="neu-icon-badge h-10 w-10 text-emerald-700 dark:text-emerald-400">
+              <ArrowDownToLine className="h-5 w-5" aria-hidden="true" />
             </div>
-            <CardTitle className="text-2xl font-bold flex items-center gap-2 relative z-10">
-              <ArrowDownToLine className="h-6 w-6" />
-              Incoming Delivery
-            </CardTitle>
-            <p className="text-emerald-50 mt-1 relative z-10 text-sm">
-              Scan or enter details for the newly received stock.
-            </p>
+            <div>
+              <CardTitle className="text-base font-semibold text-foreground">
+                Incoming Delivery
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Enter the medicine, quantity received, batch number, and expiry date.
+              </p>
+            </div>
           </div>
           <CardContent className="p-6">
           <Form {...form}>

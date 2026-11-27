@@ -98,16 +98,31 @@ export default function Suppliers() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Building2 className="h-7 w-7 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">Suppliers</h1>
+      {/* Header Banner */}
+      <div className="rounded-2xl bg-[#0F2F20] px-6 py-6 sm:px-8 text-white border border-emerald-950/60 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="border-l-2 border-emerald-400 pl-3 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200/90 mb-2">
+              Vendor Directory
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <Building2 className="h-7 w-7 text-emerald-300 shrink-0" aria-hidden="true" />
+              Suppliers
+            </h1>
+            <p className="mt-1 text-emerald-100/80 text-sm">
+              Manage pharmaceutical suppliers, contact details, and delivery partners.
+            </p>
+          </div>
+          {isAdmin && (
+            <Button
+              onClick={openAdd}
+              data-testid="button-add-supplier"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 self-start sm:self-center"
+            >
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" /> Add Supplier
+            </Button>
+          )}
         </div>
-        {isAdmin && (
-          <Button onClick={openAdd} data-testid="button-add-supplier">
-            <Plus className="mr-2 h-4 w-4" /> Add Supplier
-          </Button>
-        )}
       </div>
 
       <Card>

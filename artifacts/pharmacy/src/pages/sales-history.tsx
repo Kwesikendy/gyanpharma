@@ -618,7 +618,7 @@ export default function SalesHistory() {
           {selectedRecord && (
             <div>
               {/* Receipt Header Banner */}
-              <div className="bg-gradient-to-r from-slate-900 to-indigo-950 p-6 text-white text-center relative overflow-hidden">
+              <div className="bg-[#0F2F20] p-6 text-white text-center relative overflow-hidden">
                 <div className="absolute right-0 top-0 -mt-6 -mr-6 h-24 w-24 rounded-full bg-indigo-500/20 blur-xl pointer-events-none" />
                 
                 <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-emerald-500/20 text-emerald-400 mb-3 border border-emerald-500/30">

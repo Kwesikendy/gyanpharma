@@ -87,14 +87,64 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Users className="h-7 w-7 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+      {/* Header Banner */}
+      <div className="rounded-2xl bg-[#0F2F20] px-6 py-6 sm:px-8 text-white border border-emerald-950/60 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="border-l-2 border-emerald-400 pl-3 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200/90 mb-2">
+              Access & Team Accounts
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <Users className="h-7 w-7 text-emerald-300 shrink-0" aria-hidden="true" />
+              User Management
+            </h1>
+            <p className="mt-1 text-emerald-100/80 text-sm">
+              Manage staff roles, create new accounts, and issue password reset links.
+            </p>
+          </div>
+          <Button
+            onClick={() => setDialogOpen(true)}
+            data-testid="button-add-user"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 self-start sm:self-center"
+          >
+            <UserPlus className="mr-2 h-4 w-4" aria-hidden="true" /> Add User
+          </Button>
         </div>
-        <Button onClick={() => setDialogOpen(true)} data-testid="button-add-user">
-          <UserPlus className="mr-2 h-4 w-4" /> Add User
-        </Button>
+      </div>
+
+      {/* Selective Neumorphic Team Summary */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="neu-raised neu-raised--press p-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Staff</p>
+            <p className="mt-1 text-2xl font-bold font-mono tabular-nums text-foreground">{users.length}</p>
+          </div>
+          <div className="neu-icon-badge h-11 w-11 text-emerald-700 dark:text-emerald-400">
+            <Users className="h-5 w-5" aria-hidden="true" />
+          </div>
+        </div>
+        <div className="neu-raised neu-raised--press p-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Admins</p>
+            <p className="mt-1 text-2xl font-bold font-mono tabular-nums text-foreground">
+              {users.filter((u) => u.role === "admin").length}
+            </p>
+          </div>
+          <div className="neu-icon-badge h-11 w-11 text-emerald-700 dark:text-emerald-400">
+            <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+          </div>
+        </div>
+        <div className="neu-raised neu-raised--press p-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pharmacists & Sales</p>
+            <p className="mt-1 text-2xl font-bold font-mono tabular-nums text-foreground">
+              {users.filter((u) => u.role !== "admin").length}
+            </p>
+          </div>
+          <div className="neu-icon-badge h-11 w-11 text-emerald-700 dark:text-emerald-400">
+            <User className="h-5 w-5" aria-hidden="true" />
+          </div>
+        </div>
       </div>
 
       <Card>

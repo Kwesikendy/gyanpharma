@@ -96,56 +96,95 @@ export default function Inventory() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Package className="h-7 w-7 text-primary" />
-          <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => exportMedicinesToCsv(filteredMedicines)} data-testid="button-export-csv">
-            <Download className="mr-2 h-4 w-4" /> Export CSV
-          </Button>
-          {isAdmin && (
-            <Button onClick={openAdd} data-testid="button-add-medicine">
-              <Plus className="mr-2 h-4 w-4" /> Add Medicine
+      {/* Header Banner */}
+      <div className="rounded-2xl bg-[#0F2F20] px-6 py-6 sm:px-8 text-white border border-emerald-950/60 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="border-l-2 border-emerald-400 pl-3 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200/90 mb-2">
+              Catalog Management
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <Package className="h-7 w-7 text-emerald-300 shrink-0" aria-hidden="true" />
+              Inventory
+            </h1>
+            <p className="mt-1 text-emerald-100/80 text-sm">
+              Track stock quantities, pricing, batch numbers, and expiry dates.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              variant="outline"
+              onClick={() => exportMedicinesToCsv(filteredMedicines)}
+              data-testid="button-export-csv"
+              className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+            >
+              <Download className="mr-2 h-4 w-4" aria-hidden="true" /> Export CSV
             </Button>
-          )}
+            {isAdmin && (
+              <Button
+                onClick={openAdd}
+                data-testid="button-add-medicine"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500"
+              >
+                <Plus className="mr-2 h-4 w-4" aria-hidden="true" /> Add Medicine
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Alert banners */}
-      {(lowStockCount > 0 || expiringCount > 0) && (
-        <div className="flex flex-wrap gap-3">
-          {lowStockCount > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800">
-              <AlertTriangle className="h-4 w-4 shrink-0" />
-              <span><strong>{lowStockCount}</strong> item{lowStockCount > 1 ? "s" : ""} below stock threshold</span>
-            </div>
-          )}
-          {expiringCount > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span><strong>{expiringCount}</strong> item{expiringCount > 1 ? "s" : ""} expired or expiring soon</span>
-            </div>
-          )}
+      {/* Selective Neumorphic Summary Strip */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="neu-raised neu-raised--press p-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Catalog</p>
+            <p className="mt-1 text-2xl font-bold font-mono tabular-nums text-foreground">{medicines.length}</p>
+          </div>
+          <div className="neu-icon-badge h-11 w-11 text-emerald-700 dark:text-emerald-400">
+            <Package className="h-5 w-5" aria-hidden="true" />
+          </div>
         </div>
-      )}
+
+        <div className={`neu-raised neu-raised--press p-4 flex items-center justify-between gap-3 ${lowStockCount > 0 ? "border-amber-500/40" : ""}`}>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Low Stock</p>
+            <p className={`mt-1 text-2xl font-bold font-mono tabular-nums ${lowStockCount > 0 ? "text-amber-700 dark:text-amber-400" : "text-foreground"}`}>
+              {lowStockCount}
+            </p>
+          </div>
+          <div className={`neu-icon-badge h-11 w-11 ${lowStockCount > 0 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
+            <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+          </div>
+        </div>
+
+        <div className={`neu-raised neu-raised--press p-4 flex items-center justify-between gap-3 ${expiringCount > 0 ? "border-rose-500/40" : ""}`}>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Expiring / Expired</p>
+            <p className={`mt-1 text-2xl font-bold font-mono tabular-nums ${expiringCount > 0 ? "text-rose-700 dark:text-rose-400" : "text-foreground"}`}>
+              {expiringCount}
+            </p>
+          </div>
+          <div className={`neu-icon-badge h-11 w-11 ${expiringCount > 0 ? "text-rose-700 dark:text-rose-400" : "text-muted-foreground"}`}>
+            <AlertCircle className="h-5 w-5" aria-hidden="true" />
+          </div>
+        </div>
+      </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 bg-card p-4 rounded-lg border shadow-sm">
+      <div className="neu-raised p-4 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             type="search"
             placeholder="Search name or category..."
-            className="pl-8"
+            className="pl-9 bg-white dark:bg-background"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             data-testid="input-search"
           />
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[160px]" data-testid="select-category-filter">
+          <SelectTrigger className="w-[170px] bg-white dark:bg-background" data-testid="select-category-filter">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -154,7 +193,7 @@ export default function Inventory() {
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]" data-testid="select-status-filter">
+          <SelectTrigger className="w-[150px] bg-white dark:bg-background" data-testid="select-status-filter">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -169,7 +208,7 @@ export default function Inventory() {
             Clear filters
           </Button>
         )}
-        <span className="ml-auto text-sm text-muted-foreground">{filteredMedicines.length} of {medicines.length} items</span>
+        <span className="ml-auto text-xs font-mono text-muted-foreground">{filteredMedicines.length} of {medicines.length} items</span>
       </div>
 
       <div className="rounded-md border bg-card shadow-sm overflow-hidden">

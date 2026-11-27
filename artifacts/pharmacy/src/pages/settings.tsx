@@ -118,26 +118,37 @@ export default function SettingsPage() {
   }
 
   const collectionMeta = [
-    { key: "medicines", label: "Medicines (Inventory)", icon: Package, color: "text-emerald-600 bg-emerald-50" },
-    { key: "stockEntries", label: "Stock Entries", icon: ArrowDownToLine, color: "text-blue-600 bg-blue-50" },
-    { key: "dispensingRecords", label: "Dispensing Records", icon: Pill, color: "text-violet-600 bg-violet-50" },
-    { key: "suppliers", label: "Suppliers", icon: Truck, color: "text-amber-600 bg-amber-50" },
-    { key: "users", label: "Users", icon: Users, color: "text-rose-600 bg-rose-50" },
+    { key: "medicines", label: "Medicines (Inventory)", icon: Package, color: "text-emerald-700 dark:text-emerald-400" },
+    { key: "stockEntries", label: "Stock Entries", icon: ArrowDownToLine, color: "text-emerald-700 dark:text-emerald-400" },
+    { key: "dispensingRecords", label: "Dispensing Records", icon: Pill, color: "text-emerald-700 dark:text-emerald-400" },
+    { key: "suppliers", label: "Suppliers", icon: Truck, color: "text-emerald-700 dark:text-emerald-400" },
+    { key: "users", label: "Users", icon: Users, color: "text-emerald-700 dark:text-emerald-400" },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Settings className="h-7 w-7 text-primary" />
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+      {/* Header Banner */}
+      <div className="rounded-2xl bg-[#0F2F20] px-6 py-6 sm:px-8 text-white border border-emerald-950/60 shadow-sm">
+        <p className="border-l-2 border-emerald-400 pl-3 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200/90 mb-2">
+          Account & System Preferences
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <Settings className="h-7 w-7 text-emerald-300 shrink-0" aria-hidden="true" />
+          Settings
+        </h1>
+        <p className="mt-1 text-emerald-100/80 text-sm">
+          Update your profile, change your password, and export full Firestore backups.
+        </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* ── Account Information ── */}
-        <Card>
+        {/* Account Information */}
+        <Card className="border shadow-sm bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center gap-2.5 text-base">
+              <div className="neu-icon-badge h-9 w-9 text-emerald-700 dark:text-emerald-400">
+                <User className="h-4 w-4" aria-hidden="true" />
+              </div>
               Account Information
             </CardTitle>
             <CardDescription>Your profile details</CardDescription>

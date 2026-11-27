@@ -213,35 +213,46 @@ export default function Dispensing() {
       initial="hidden"
       animate="visible"
     >
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 shadow-sm">
-            <Pill className="h-6 w-6 text-indigo-600" />
-          </div>
+      {/* Header Banner */}
+      <motion.div
+        variants={itemVariants}
+        className="rounded-2xl bg-[#0F2F20] px-6 py-6 sm:px-8 text-white border border-emerald-950/60 shadow-sm"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dispensing</h1>
-            <p className="text-sm text-muted-foreground">Process orders and dispense medication</p>
+            <p className="border-l-2 border-emerald-400 pl-3 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200/90 mb-2">
+              Point of Sale & Counter
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <Pill className="h-7 w-7 text-emerald-300 shrink-0" aria-hidden="true" />
+              Dispensing
+            </h1>
+            <p className="mt-1 text-emerald-100/80 text-sm">
+              Process customer orders and dispense medication with real-time stock deduction.
+            </p>
           </div>
-        </div>
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button variant="outline" onClick={() => exportDispensingToCsv(records)} disabled={records.length === 0} className="shadow-sm">
-            <Download className="mr-2 h-4 w-4" /> Export CSV
+          <Button
+            variant="outline"
+            onClick={() => exportDispensingToCsv(records)}
+            disabled={records.length === 0}
+            className="bg-white/10 hover:bg-white/20 text-white border-white/20 self-start sm:self-center"
+          >
+            <Download className="mr-2 h-4 w-4" aria-hidden="true" /> Export CSV
           </Button>
-        </motion.div>
+        </div>
       </motion.div>
 
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Side: Add to Cart */}
         <div className="lg:col-span-5 space-y-6">
-          <Card className="overflow-hidden border-0 shadow-lg shadow-indigo-900/5">
-            <div className="bg-gradient-to-r from-indigo-500 to-blue-600 p-5 text-white relative overflow-hidden">
-              <div className="absolute -right-4 -top-8 opacity-20">
-                <Receipt className="h-32 w-32" />
+          <Card className="overflow-hidden border shadow-sm bg-card">
+            <div className="px-5 py-4 border-b bg-muted/40 flex items-center gap-3">
+              <div className="neu-icon-badge h-9 w-9 text-emerald-700 dark:text-emerald-400">
+                <Plus className="h-4 w-4" aria-hidden="true" />
               </div>
-              <CardTitle className="text-xl font-bold flex items-center gap-2 relative z-10">
-                <Plus className="h-5 w-5" />
-                Add Item
+              <CardTitle className="text-base font-semibold text-foreground">
+                Add Item to Order
               </CardTitle>
             </div>
             <CardContent className="p-5">
@@ -364,9 +375,9 @@ export default function Dispensing() {
                   <Button
                     type="submit"
                     disabled={!selectedMedicine || isExpired(selectedMedicine.expiryDate) || (remainingAfterDispense !== null && remainingAfterDispense < 0)}
-                    className="w-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200"
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
-                    <Plus className="mr-2 h-4 w-4" /> Add to Cart
+                    <Plus className="mr-2 h-4 w-4" aria-hidden="true" /> Add to Cart
                   </Button>
                 </form>
               </Form>
@@ -376,15 +387,17 @@ export default function Dispensing() {
 
         {/* Right Side: Cart & Checkout */}
         <div className="lg:col-span-7 space-y-6">
-          <Card className="overflow-hidden border shadow-sm h-full flex flex-col">
+          <Card className="overflow-hidden border shadow-sm h-full flex flex-col bg-card">
             <div className="flex justify-between items-center bg-muted/40 px-5 py-4 border-b">
-              <div className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-indigo-600" />
-                <CardTitle className="text-lg">Current Order</CardTitle>
+              <div className="flex items-center gap-3">
+                <div className="neu-icon-badge h-9 w-9 text-emerald-700 dark:text-emerald-400">
+                  <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+                </div>
+                <CardTitle className="text-base font-semibold">Current Order</CardTitle>
               </div>
-              <Badge variant="secondary" className="font-mono text-sm bg-indigo-100 text-indigo-800">
-                {cart.length} items
-              </Badge>
+              <span className="neu-pill px-3 py-1 font-mono text-xs font-semibold text-foreground">
+                {cart.length} {cart.length === 1 ? "item" : "items"}
+              </span>
             </div>
             
             <CardContent className="p-0 flex-grow">
