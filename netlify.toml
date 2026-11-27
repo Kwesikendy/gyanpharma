@@ -4,6 +4,9 @@
   command = "pnpm run build:frontend"
   publish = "artifacts/pharmacy/dist"
 
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "VITE_FIREBASE_API_KEY,SECRETS_SCAN_OMIT_KEYS"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
