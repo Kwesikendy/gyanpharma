@@ -1,0 +1,10 @@
+"$schema" = "https://open-api.netlify.com/netlify.schema.json"
+
+[build]
+  command = "pnpm run build:frontend"
+  publish = "artifacts/pharmacy/dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

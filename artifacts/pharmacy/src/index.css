@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -94,7 +94,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* LIGHT MODE — Green + White Pharmacy Theme */
+/* LIGHT MODE - Green + Matte Off-White Pharmacy Theme */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -104,14 +104,26 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 140 20% 97%;
-  --foreground: 150 40% 10%;
+  --background: 150 18% 94%;
+  --foreground: 155 42% 11%;
 
-  --border: 140 20% 88%;
+  --border: 150 16% 85%;
 
   --card: 0 0% 100%;
-  --card-foreground: 150 40% 10%;
-  --card-border: 140 20% 88%;
+  --card-foreground: 155 42% 11%;
+  --card-border: 150 16% 85%;
+
+  /* Selective Neumorphism (Soft UI) tokens tuned for matte cool-sage surface */
+  --neu-bg:        #EDF3F0;
+  --neu-light:     rgba(255, 255, 255, 0.88);
+  --neu-dark:      rgba(148, 170, 158, 0.42);
+  --neu-light-in:  rgba(255, 255, 255, 0.82);
+  --neu-edge:      rgba(255, 255, 255, 0.55);
+  --neu-radius:    20px;
+  --neu-raised:    -6px -6px 14px var(--neu-light), 6px 6px 14px var(--neu-dark);
+  --neu-raised-sm: -4px -4px 9px var(--neu-light), 4px 4px 9px var(--neu-dark);
+  --neu-inset:     inset -4px -4px 10px var(--neu-light-in), inset 4px 4px 10px var(--neu-dark);
+  --neu-inset-sm:  inset -3px -3px 7px var(--neu-light-in), inset 3px 3px 7px var(--neu-dark);
 
   /* Deep forest green sidebar */
   --sidebar: 152 55% 12%;
@@ -151,9 +163,10 @@
   --chart-4: 200 70% 50%;
   --chart-5: 0 84% 60%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --app-font-sans: 'DM Sans', system-ui, sans-serif;
   --app-font-serif: Georgia, serif;
-  --app-font-mono: Menlo, monospace;
+  --app-font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --radius: 0.6rem;
   
   --shadow-2xs: 0px 1px 2px 0px rgba(0,0,0,0.05);
@@ -249,6 +262,143 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--app-font-heading);
+  }
+}
+
+/* ==========================================================================
+   SELECTIVE NEUMORPHISM (SOFT UI) UTILITIES
+   Applied selectively on matte off-white surfaces. Forms & primary CTAs stay
+   crisp and high-contrast for legibility (WCAG AA).
+   ========================================================================== */
+.neu-surface {
+  background: var(--neu-bg);
+}
+
+.neu-raised {
+  background: var(--neu-bg);
+  border: 1px solid var(--neu-edge);
+  border-radius: var(--neu-radius);
+  box-shadow: var(--neu-raised);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.neu-raised--press:hover,
+.neu-raised--press:active {
+  box-shadow: var(--neu-inset);
+}
+
+.neu-inset {
+  background: var(--neu-bg);
+  border-radius: var(--neu-radius);
+  box-shadow: var(--neu-inset);
+  transition: box-shadow 0.25s ease;
+}
+
+.neu-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--neu-bg);
+  border: 1px solid var(--neu-edge);
+  border-radius: 16px;
+  box-shadow: var(--neu-raised-sm);
+  transition: box-shadow 0.25s ease;
+}
+
+.neu-raised--press:hover .neu-icon-badge {
+  box-shadow: var(--neu-inset-sm);
+}
+
+.neu-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--neu-bg);
+  color: hsl(var(--foreground));
+  border: 1px solid var(--neu-edge);
+  border-radius: 9999px;
+  box-shadow: var(--neu-raised-sm);
+  transition: box-shadow 0.25s ease, color 0.25s ease;
+}
+
+.neu-track {
+  background: var(--neu-bg);
+  border-radius: 9999px;
+  box-shadow: var(--neu-inset-sm);
+  padding: 4px;
+}
+
+.neu-tab {
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: box-shadow 0.25s ease, color 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.neu-tab:hover {
+  color: hsl(var(--foreground));
+}
+
+.neu-tab:active {
+  box-shadow: var(--neu-inset-sm);
+}
+
+.neu-tab.active,
+.neu-tab[aria-selected="true"] {
+  background: var(--neu-bg);
+  color: hsl(var(--foreground));
+  border-color: var(--neu-edge);
+  box-shadow: var(--neu-raised-sm);
+}
+
+.neu-raised:focus-visible,
+.neu-tab:focus-visible,
+.neu-pill:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Safe dark mode overrides: never render bright white neumorphic shadows on dark surfaces */
+.dark .neu-surface,
+.dark .neu-raised,
+.dark .neu-inset,
+.dark .neu-icon-badge,
+.dark .neu-pill,
+.dark .neu-track,
+.dark .neu-tab.active,
+.dark .neu-tab[aria-selected="true"] {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+  box-shadow: var(--shadow-sm);
+}
+
+.dark .neu-raised--press:hover,
+.dark .neu-raised--press:active {
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  :root {
+    --neu-raised:    -4px -4px 10px var(--neu-light), 4px 4px 10px var(--neu-dark);
+    --neu-raised-sm: -3px -3px 7px var(--neu-light), 3px 3px 7px var(--neu-dark);
+    --neu-inset:     inset -3px -3px 7px var(--neu-light-in), inset 3px 3px 7px var(--neu-dark);
+    --neu-inset-sm:  inset -2px -2px 5px var(--neu-light-in), inset 2px 2px 5px var(--neu-dark);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neu-raised,
+  .neu-inset,
+  .neu-icon-badge,
+  .neu-pill,
+  .neu-tab {
+    transition: none;
   }
 }
 

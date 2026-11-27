@@ -44,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
-      {/* ── Offline / Back-Online Banner ── */}
+      {/* Offline / Back-Online Banner */}
       <AnimatePresence>
         {!isOnline && (
           <motion.div
@@ -52,16 +52,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
             initial={{ y: -48, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -48, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-2 bg-amber-500 text-white text-sm font-medium py-2.5 px-4 shadow-lg"
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-2 bg-amber-600 text-white text-sm font-medium py-2.5 px-4 shadow-md"
           >
-            <motion.div
-              animate={{ rotate: [0, -15, 15, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              <WifiOff className="h-4 w-4 shrink-0" />
-            </motion.div>
-            <span>You're offline — data shown from local cache. Changes will sync when reconnected.</span>
+            <WifiOff className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>You are offline. Data is shown from local cache and changes will sync when reconnected.</span>
           </motion.div>
         )}
         {justCameBack && (
@@ -70,17 +65,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
             initial={{ y: -48, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -48, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-2 bg-emerald-600 text-white text-sm font-medium py-2.5 px-4 shadow-lg"
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-2 bg-emerald-700 text-white text-sm font-medium py-2.5 px-4 shadow-md"
           >
-            <motion.div
-              animate={{ rotate: [0, 360] }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            >
-              <RefreshCw className="h-4 w-4 shrink-0" />
-            </motion.div>
-            <Wifi className="h-4 w-4 shrink-0" />
-            <span>Back online — syncing your data with Firebase…</span>
+            <RefreshCw className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <Wifi className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>Back online. Syncing your data with Firebase...</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -108,20 +98,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       >
         {/* Brand */}
         <div className="flex h-16 shrink-0 items-center justify-between px-6 bg-sidebar-primary/10 border-b border-sidebar-border">
-          <motion.div
-            className="flex items-center gap-2 font-bold text-lg text-white"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Pill className="h-6 w-6 text-sidebar-primary" />
-            </motion.div>
+          <div className="flex items-center gap-2.5 font-bold text-lg text-white tracking-tight">
+            <Pill className="h-5 w-5 text-sidebar-primary shrink-0" aria-hidden="true" />
             <span>Gyan Chemicals</span>
-          </motion.div>
+          </div>
           <Button
             variant="ghost"
             size="icon"
@@ -188,25 +168,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Connectivity indicator */}
           <div className="flex items-center justify-between mb-3 px-1">
             <div className="flex items-center gap-2">
-              <motion.div
+              <span
                 className={`h-2 w-2 rounded-full ${isOnline ? "bg-emerald-400" : "bg-amber-400"}`}
-                animate={isOnline ? { scale: [1, 1.3, 1] } : { opacity: [1, 0.4, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                aria-hidden="true"
               />
-              <span className="text-xs text-sidebar-foreground/60">
-                {isOnline ? "Connected" : "Offline — cached data"}
+              <span className="text-xs text-sidebar-foreground/70">
+                {isOnline ? "Connected" : "Offline - cached data"}
               </span>
             </div>
             <span className="text-xs text-sidebar-foreground/50 font-mono select-none font-semibold">v1.0.0</span>
           </div>
 
           <div className="flex items-center gap-3 mb-4">
-            <motion.div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground font-bold"
-              whileHover={{ scale: 1.1 }}
-            >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground font-bold">
               {userProfile?.displayName?.charAt(0).toUpperCase() || "U"}
-            </motion.div>
+            </div>
             <div className="flex flex-col overflow-hidden">
               <span className="truncate text-sm font-medium text-white">
                 {userProfile?.displayName}
@@ -218,33 +194,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {isInstallable && (
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="mb-2">
+            <div className="mb-2">
               <Button
                 variant="outline"
-                className="w-full justify-start gap-2 bg-emerald-600/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-600 hover:text-white"
+                className="w-full justify-start gap-2 bg-emerald-600/20 border-emerald-500/30 text-emerald-300 hover:bg-emerald-600 hover:text-white"
                 onClick={installPWA}
               >
-                <DownloadCloud className="h-4 w-4" />
+                <DownloadCloud className="h-4 w-4" aria-hidden="true" />
                 Install App
               </Button>
-            </motion.div>
+            </div>
           )}
 
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2 bg-transparent border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
-              onClick={() => logout()}
-            >
-              <motion.div
-                whileHover={{ rotate: 180 }}
-                transition={{ duration: 0.3 }}
-              >
-                <LogOut className="h-4 w-4" />
-              </motion.div>
-              Logout
-            </Button>
-          </motion.div>
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-2 bg-transparent border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent hover:text-white"
+            onClick={() => logout()}
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            Logout
+          </Button>
         </motion.div>
       </aside>
 
@@ -262,10 +231,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="font-semibold">Gyan Chemicals</div>
           {/* Mobile offline dot */}
           <div className="ml-auto flex items-center gap-1.5">
-            <motion.div
+            <span
               className={`h-2 w-2 rounded-full ${isOnline ? "bg-emerald-500" : "bg-amber-500"}`}
-              animate={!isOnline ? { opacity: [1, 0.3, 1] } : {}}
-              transition={{ duration: 1.5, repeat: Infinity }}
+              aria-hidden="true"
             />
             <span className="text-xs text-muted-foreground">
               {isOnline ? "Online" : "Offline"}

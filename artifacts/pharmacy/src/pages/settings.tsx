@@ -300,16 +300,16 @@ export default function SettingsPage() {
         </Card>
       </div>
 
-      {/* ── Data Backup — Admin only ── */}
+      {/* Data Backup - Admin only */}
       {isAdmin && (
-        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50/60 to-white">
+        <Card className="border shadow-sm bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-emerald-800">
-              <DatabaseBackup className="h-5 w-5 text-emerald-600" />
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <DatabaseBackup className="h-5 w-5 text-primary" aria-hidden="true" />
               Data Backup
             </CardTitle>
             <CardDescription>
-              Export a full copy of all Firestore data as a JSON file. Keep this safe — you can use it to restore everything if you ever rebuild the system.
+              Export a full copy of all Firestore data as a JSON file. Keep this safe so you can restore everything if you ever rebuild the system.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -318,10 +318,10 @@ export default function SettingsPage() {
               {collectionMeta.map(({ key, label, icon: Icon, color }) => (
                 <div
                   key={key}
-                  className="flex flex-col items-center gap-1.5 rounded-xl border bg-white p-3 text-center shadow-sm"
+                  className="neu-raised p-3 flex flex-col items-center gap-1.5 text-center"
                 >
                   <div className={`flex h-9 w-9 items-center justify-center rounded-full ${color}`}>
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <AnimatePresence mode="wait">
                     {backupCounts ? (
@@ -329,12 +329,12 @@ export default function SettingsPage() {
                         key="count"
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-lg font-bold text-foreground"
+                        className="text-lg font-bold font-mono tabular-nums text-foreground"
                       >
                         {backupCounts[key] ?? 0}
                       </motion.span>
                     ) : (
-                      <span className="text-lg font-bold text-muted-foreground">—</span>
+                      <span className="text-lg font-bold text-muted-foreground">-</span>
                     )}
                   </AnimatePresence>
                   <span className="text-[11px] text-muted-foreground leading-tight">{label}</span>
@@ -365,7 +365,7 @@ export default function SettingsPage() {
                 >
                   <CheckCircle2 className="h-4 w-4 shrink-0" />
                   <span>
-                    Backup downloaded successfully —{" "}
+                    Backup downloaded successfully:{" "}
                     {backupCounts && Object.values(backupCounts).reduce((a, b) => a + b, 0)} records exported.
                   </span>
                 </motion.div>
@@ -406,7 +406,7 @@ export default function SettingsPage() {
             <p className="text-xs text-muted-foreground">
               The downloaded file contains every medicine, stock entry, dispensing record, supplier, and user account stored in Firebase.
               All timestamps are preserved as ISO-8601 strings so they can be re-imported exactly.
-              <strong className="text-foreground"> Store it somewhere safe — Google Drive, a USB drive, or your email.</strong>
+              <strong className="text-foreground"> Store it somewhere safe such as Google Drive, a USB drive, or your email.</strong>
             </p>
           </CardContent>
         </Card>

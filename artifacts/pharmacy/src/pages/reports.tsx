@@ -97,7 +97,7 @@ export default function Reports() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">Date range:</div>
             <div className="flex items-center gap-2">
               <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[160px]" data-testid="input-date-from" />
-              <span className="text-muted-foreground">—</span>
+              <span className="text-muted-foreground">-</span>
               <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-[160px]" data-testid="input-date-to" />
             </div>
             {(dateFrom || dateTo) && (

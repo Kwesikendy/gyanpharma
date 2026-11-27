@@ -66,42 +66,25 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 p-4 overflow-hidden relative">
-      {/* Animated background blobs */}
+    <div className="min-h-screen flex items-center justify-center neu-surface p-4">
       <motion.div
-        className="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full bg-primary/10 blur-3xl"
-        animate={{ x: [0, 40, 0], y: [0, 30, 0] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-[-10%] right-[-10%] w-80 h-80 rounded-full bg-cyan-400/10 blur-3xl"
-        animate={{ x: [0, -30, 0], y: [0, -40, 0] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-      />
-
-      <motion.div
-        className="w-full max-w-md space-y-8 relative z-10"
+        className="w-full max-w-md space-y-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Logo + Brand */}
         <motion.div variants={itemVariants} className="flex flex-col items-center justify-center text-center">
-          <motion.div
-            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xl mb-4"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            whileHover={{ scale: 1.1, rotate: 5 }}
-          >
-            <Pill className="h-8 w-8" />
-          </motion.div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gyan Chemicals</h1>
-          <p className="text-slate-500 mt-2">Pharmacy Management System</p>
+          <div className="neu-raised flex h-16 w-16 items-center justify-center text-primary mb-4">
+            <Pill className="h-8 w-8" aria-hidden="true" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Gyan Chemicals</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm">Pharmacy Management System</p>
         </motion.div>
 
         {/* Card */}
         <motion.div variants={itemVariants}>
-          <Card className="border-slate-200 shadow-2xl backdrop-blur-sm bg-white/90">
+          <Card className="border shadow-md bg-card">
             <CardHeader>
               <CardTitle>Sign In</CardTitle>
               <CardDescription>Enter your credentials to access your account</CardDescription>

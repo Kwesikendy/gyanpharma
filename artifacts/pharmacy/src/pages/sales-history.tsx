@@ -174,155 +174,150 @@ export default function SalesHistory() {
       initial="hidden"
       animate="visible"
     >
-      {/* ── Header Banner ── */}
+      {/* Header Banner */}
       <motion.div 
         variants={itemVariants}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl border border-indigo-500/20"
+        className="rounded-2xl bg-[#0F2F20] p-6 sm:p-8 text-white shadow-sm border border-emerald-950/60"
       >
-        <div className="absolute right-0 top-0 -mt-8 -mr-8 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 bottom-0 -mb-8 h-48 w-48 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-300 border border-indigo-500/30 backdrop-blur-md">
-              <Sparkles className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
-              <span>Full Transaction Archive</span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
-              <History className="h-8 w-8 text-indigo-400" />
+            <p className="border-l-2 border-emerald-400 pl-3 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-200/90">
+              Complete Dispensing Archive
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+              <History className="h-7 w-7 text-emerald-300 shrink-0" aria-hidden="true" />
               Sales History
             </h1>
-            <p className="text-slate-300 max-w-xl text-sm sm:text-base leading-relaxed">
-              Explore your complete dispensing log from the very first sale to the last. Filter, analyze, and inspect individual transaction receipts in real-time.
+            <p className="text-emerald-100/80 max-w-xl text-sm leading-relaxed">
+              Review every dispensing record from the very first sale to the latest. Filter by date, search receipts, and export reports.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {isAdmin && (
-              <div className="inline-flex rounded-xl bg-slate-800/80 p-1 border border-slate-700/60 backdrop-blur-md shadow-inner">
-                <button
-                  type="button"
-                  onClick={() => setScope("my")}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5",
-                    scope === "my"
-                      ? "bg-indigo-600 text-white shadow-md"
-                      : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-                  )}
-                >
-                  <User className="h-3.5 w-3.5" />
-                  My Sales
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setScope("all")}
-                  className={cn(
-                    "px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5",
-                    scope === "all"
-                      ? "bg-indigo-600 text-white shadow-md"
-                      : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-                  )}
-                >
-                  <Receipt className="h-3.5 w-3.5" />
-                  All Staff ({allRecords.length})
-                </button>
-              </div>
-            )}
-
             <Button 
               variant="outline" 
               onClick={() => exportDispensingToCsv(filteredAndSortedRecords)} 
               disabled={filteredAndSortedRecords.length === 0}
-              className="bg-white/10 hover:bg-white/20 text-white border-white/20 shadow-sm backdrop-blur-md transition-all"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 shadow-sm transition-colors"
             >
-              <Download className="mr-2 h-4 w-4" /> Export CSV ({totalTransactions})
+              <Download className="mr-2 h-4 w-4" aria-hidden="true" /> Export CSV ({totalTransactions})
             </Button>
           </div>
         </div>
       </motion.div>
 
-      {/* ── KPI Summary Cards ── */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="relative overflow-hidden border bg-gradient-to-br from-background to-muted/30 shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-l-indigo-500">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Transactions</p>
-                <p className="text-2xl font-bold tracking-tight text-foreground">{totalTransactions.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">
-                  {scope === "my" ? "Your personal sales" : "Total store records"}
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 shrink-0">
-                <Receipt className="h-6 w-6" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Scope Toggle (Admin) - Tactile Neumorphic Track */}
+      {isAdmin && (
+        <motion.div variants={itemVariants} className="flex items-center justify-between flex-wrap gap-3">
+          <div className="neu-track inline-flex items-center gap-1" role="tablist" aria-label="Sales scope">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={scope === "all"}
+              onClick={() => setScope("all")}
+              className={cn(
+                "neu-tab px-4 py-2 text-xs font-semibold flex items-center gap-1.5",
+                scope === "all" && "active"
+              )}
+            >
+              <Receipt className="h-3.5 w-3.5" aria-hidden="true" />
+              All Staff ({allRecords.length})
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={scope === "my"}
+              onClick={() => setScope("my")}
+              className={cn(
+                "neu-tab px-4 py-2 text-xs font-semibold flex items-center gap-1.5",
+                scope === "my" && "active"
+              )}
+            >
+              <User className="h-3.5 w-3.5" aria-hidden="true" />
+              My Sales
+            </button>
+          </div>
+        </motion.div>
+      )}
 
-        <Card className="relative overflow-hidden border bg-gradient-to-br from-background to-muted/30 shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-l-emerald-500">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold tracking-tight text-emerald-600">GH₵ {totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                <p className="text-xs text-emerald-600/80 font-medium flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" />
-                  Gross sales value
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                <DollarSign className="h-6 w-6" />
-              </div>
+      {/* KPI Summary Cards - Selective Neumorphism */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="neu-raised neu-raised--press p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Transactions</p>
+              <p className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">{totalTransactions.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground">
+                {scope === "my" ? "Your personal sales" : "All store records"}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="neu-icon-badge h-12 w-12 text-emerald-700 dark:text-emerald-400 shrink-0">
+              <Receipt className="h-5 w-5" aria-hidden="true" />
+            </div>
+          </div>
+        </div>
 
-        <Card className="relative overflow-hidden border bg-gradient-to-br from-background to-muted/30 shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Units Dispensed</p>
-                <p className="text-2xl font-bold tracking-tight text-blue-600">{totalItemsSold.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">Total medication quantity</p>
-              </div>
-              <div className="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-600 shrink-0">
-                <Pill className="h-6 w-6" />
-              </div>
+        <div className="neu-raised neu-raised--press p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Revenue</p>
+              <p className="text-2xl font-bold font-mono tabular-nums tracking-tight text-emerald-800 dark:text-emerald-400">
+                GH₵ {totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <TrendingUp className="h-3 w-3 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+                Gross sales value
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="neu-icon-badge h-12 w-12 text-emerald-700 dark:text-emerald-400 shrink-0">
+              <DollarSign className="h-5 w-5" aria-hidden="true" />
+            </div>
+          </div>
+        </div>
 
-        <Card className="relative overflow-hidden border bg-gradient-to-br from-background to-muted/30 shadow-sm hover:shadow-md transition-all duration-200 border-l-4 border-l-amber-500">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Avg. Sale Value</p>
-                <p className="text-2xl font-bold tracking-tight text-amber-600">GH₵ {averageOrderValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                <p className="text-xs text-muted-foreground">Per transaction average</p>
-              </div>
-              <div className="h-12 w-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0">
-                <Clock className="h-6 w-6" />
-              </div>
+        <div className="neu-raised neu-raised--press p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Units Dispensed</p>
+              <p className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">{totalItemsSold.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground">Total medication quantity</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="neu-icon-badge h-12 w-12 text-emerald-700 dark:text-emerald-400 shrink-0">
+              <Pill className="h-5 w-5" aria-hidden="true" />
+            </div>
+          </div>
+        </div>
+
+        <div className="neu-raised neu-raised--press p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Avg. Sale Value</p>
+              <p className="text-2xl font-bold font-mono tabular-nums tracking-tight text-foreground">
+                GH₵ {averageOrderValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className="text-xs text-muted-foreground">Per transaction average</p>
+            </div>
+            <div className="neu-icon-badge h-12 w-12 text-emerald-700 dark:text-emerald-400 shrink-0">
+              <Clock className="h-5 w-5" aria-hidden="true" />
+            </div>
+          </div>
+        </div>
       </motion.div>
 
-      {/* ── Controls & Filters Bar ── */}
+      {/* Controls & Filters Bar */}
       <motion.div variants={itemVariants}>
-        <Card className="border shadow-sm bg-card/80 backdrop-blur-md overflow-hidden">
+        <Card className="border shadow-sm bg-card overflow-hidden">
           <CardContent className="p-5 space-y-4">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               
               {/* Search & Sort */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
                 <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <Input
                     type="search"
                     placeholder="Search medicine, patient, staff, or receipt ID..."
-                    className="pl-9 h-10 text-sm bg-background/60 focus:bg-background transition-colors"
+                    className="pl-9 h-10 text-sm bg-white dark:bg-background border-input focus-visible:ring-primary"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -336,18 +331,18 @@ export default function SalesHistory() {
                   )}
                 </div>
 
-                {/* Sort Order Selector (Highlighting: From very first sale to the last!) */}
+                {/* Sort Order Selector */}
                 <div className="flex items-center gap-2">
                   <Select value={sortOrder} onValueChange={(val: any) => setSortOrder(val)}>
-                    <SelectTrigger className="w-[220px] h-10 bg-background/60 font-medium text-sm">
-                      <ArrowUpDown className="h-3.5 w-3.5 mr-2 text-indigo-600 shrink-0" />
+                    <SelectTrigger className="w-[220px] h-10 bg-white dark:bg-background font-medium text-sm">
+                      <ArrowUpDown className="h-3.5 w-3.5 mr-2 text-primary shrink-0" aria-hidden="true" />
                       <SelectValue placeholder="Sort Order" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="newest" className="font-medium">
                         Newest to Oldest (Latest first)
                       </SelectItem>
-                      <SelectItem value="oldest" className="font-medium text-indigo-600">
+                      <SelectItem value="oldest" className="font-medium text-primary">
                         Oldest to Newest (First to last)
                       </SelectItem>
                     </SelectContent>
@@ -355,8 +350,8 @@ export default function SalesHistory() {
                 </div>
               </div>
 
-              {/* Date Presets */}
-              <div className="flex flex-wrap items-center gap-1.5 bg-muted/60 p-1 rounded-xl border border-border/50">
+              {/* Date Presets - Tactile Neumorphic Track */}
+              <div className="neu-track flex flex-wrap items-center gap-1" role="tablist" aria-label="Date range">
                 {[
                   { id: "all", label: "All Time" },
                   { id: "today", label: "Today" },
@@ -367,12 +362,12 @@ export default function SalesHistory() {
                   <button
                     key={preset.id}
                     type="button"
+                    role="tab"
+                    aria-selected={datePreset === preset.id}
                     onClick={() => setDatePreset(preset.id as any)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150",
-                      datePreset === preset.id
-                        ? "bg-background text-foreground shadow-sm border border-border/80"
-                        : "text-muted-foreground hover:text-foreground hover:bg-background/50"
+                      "neu-tab px-3 py-1.5 text-xs font-semibold",
+                      datePreset === preset.id && "active"
                     )}
                   >
                     {preset.label}
@@ -381,7 +376,7 @@ export default function SalesHistory() {
               </div>
             </div>
 
-            {/* Custom Date Range Inputs (shown when Custom Range is selected) */}
+            {/* Custom Date Range Inputs */}
             <AnimatePresence>
               {datePreset === "custom" && (
                 <motion.div
@@ -391,7 +386,7 @@ export default function SalesHistory() {
                   className="pt-2 border-t flex flex-wrap items-center gap-3 overflow-hidden"
                 >
                   <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                    <Calendar className="h-4 w-4 text-primary" />
+                    <Calendar className="h-4 w-4 text-primary" aria-hidden="true" />
                     <span>Select Range:</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -399,14 +394,14 @@ export default function SalesHistory() {
                       type="date"
                       value={dateFrom}
                       onChange={(e) => setDateFrom(e.target.value)}
-                      className="h-9 w-[150px] text-xs bg-background"
+                      className="h-9 w-[150px] text-xs bg-white dark:bg-background"
                     />
-                    <span className="text-muted-foreground text-xs">—</span>
+                    <span className="text-muted-foreground text-xs">-</span>
                     <Input
                       type="date"
                       value={dateTo}
                       onChange={(e) => setDateTo(e.target.value)}
-                      className="h-9 w-[150px] text-xs bg-background"
+                      className="h-9 w-[150px] text-xs bg-white dark:bg-background"
                     />
                   </div>
                   {(dateFrom || dateTo) && (
